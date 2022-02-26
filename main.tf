@@ -80,7 +80,10 @@ resource "libvirt_volume" "kube-router-vm1" {
 }
 
 resource "libvirt_domain" "kube-router-vm1" {
-  name   = "kube-router-vm1"
+  for_each = {
+    kube-router-vm1 = "10.241.0.10"
+  }
+  name   = each.key
   memory = var.memory_size
   vcpu   = var.cpu_count
 
@@ -89,7 +92,7 @@ resource "libvirt_domain" "kube-router-vm1" {
   network_interface {
     network_id     = libvirt_network.kube-router-net.id
     hostname       = "kube-router-vm1"
-    addresses      = ["10.241.0.10"]
+    addresses      = [each.value]
     wait_for_lease = true
   }
 
