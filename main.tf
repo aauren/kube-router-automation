@@ -12,6 +12,7 @@ provider "libvirt" {
   uri = "qemu:///system"
 }
 
+
 ######################### General Definitions #########################
 # Storage pool of where we will store our VM images
 resource "libvirt_pool" "kube-router-storage" {
@@ -40,6 +41,7 @@ resource "libvirt_network" "kube-router-net" {
   addresses = ["10.241.0.0/16", "2001:db8:ca2:2::/64"]
 }
 
+# Template the user data found in configs/cloud_init.cfg
 data "template_file" "user_data" {
   template = file("${path.module}/configs/cloud_init.cfg")
   vars = {
@@ -50,10 +52,12 @@ data "template_file" "user_data" {
   }
 }
 
+# Template the network config found in configs/network.cfg
 data "template_file" "network_config" {
   template = file("${path.module}/configs/network.cfg")
 }
 
+# Combine the two above templates and present it as a cloud-init ISO which is stored in the same pool as our images
 # for more info about paramater check this out
 # https://github.com/dmacvicar/terraform-provider-libvirt/blob/master/website/docs/r/cloudinit.html.markdown
 # Use CloudInit to add our ssh-key to the instance
@@ -64,6 +68,7 @@ resource "libvirt_cloudinit_disk" "commoninit" {
   network_config = data.template_file.network_config.rendered
   pool           = libvirt_pool.kube-router-storage.name
 }
+
 
 ######################### Per VM Definitions #########################
 # Disk images for Ubuntu version 20.04 LTS (Focal Fossa)
