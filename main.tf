@@ -81,8 +81,8 @@ resource "libvirt_volume" "kube-router-vm1" {
 
 resource "libvirt_domain" "kube-router-vm1" {
   name   = "kube-router-vm1"
-  memory = 3072
-  vcpu   = 2
+  memory = var.memory_size
+  vcpu   = var.cpu_count
 
   cloudinit = libvirt_cloudinit_disk.commoninit.id
 

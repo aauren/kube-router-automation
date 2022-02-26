@@ -26,3 +26,5 @@ absolutely be changed, especially if exposing to another network.
 * **user_ssh_key** - NO_DEFAULT_SET - The SSH key that you want to use if you intend to SSH to this VM. By default,
 password authentication is not enabled on the hosts, so setting this is effectively the only way to SSH to this host.
 * **user_groups** - `adm` - Additional groups to add the user (identified by `username` above) to
+* **cpu_count** - `2` - Numerical number for how many VCPUs to expose to each VM
+* **memory_size** - `3072` - Number in Megabytes for how much memory to expose to each VM

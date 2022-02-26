@@ -38,3 +38,13 @@ variable "user_groups" {
   type    = string
   default = "adm"
 }
+
+variable "cpu_count" {
+  type    = number
+  default = 2
+}
+
+variable "memory_size" {
+  type    = number
+  default = 3072
+}
