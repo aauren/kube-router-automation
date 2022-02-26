@@ -1,3 +1,4 @@
+######################### Providers #########################
 terraform {
   required_providers {
     libvirt = {
@@ -7,50 +8,11 @@ terraform {
   }
 }
 
-variable "image_cache_dir" {
-  type    = string
-  default = "/tmp/kube-router-img-cache"
-}
-
-variable "ubuntu_image_url" {
-  type    = string
-  default = "https://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64.img"
-}
-
-variable "disk_size" {
-  type    = string
-  default = "20G"
-}
-
-variable "vm_pool_dir" {
-  type    = string
-  default = "/var/lib/libvirt/kube-router-images"
-}
-
-variable "root_password" {
-  type    = string
-  default = "kube-router-linux"
-}
-
-variable "username" {
-  type    = string
-  default = "kube-router"
-}
-
-variable "user_ssh_key" {
-  type    = string
-  default = ""
-}
-
-variable "user_groups" {
-  type    = string
-  default = "adm"
-}
-
 provider "libvirt" {
   uri = "qemu:///system"
 }
 
+######################### General Definitions #########################
 # Storage pool of where we will store our VM images
 resource "libvirt_pool" "kube-router-storage" {
   name = "kube-router-storage"
@@ -78,14 +40,6 @@ resource "libvirt_network" "kube-router-net" {
   addresses = ["10.241.0.0/16", "2001:db8:ca2:2::/64"]
 }
 
-# Disk images for Ubuntu version 20.04 LTS (Focal Fossa)
-resource "libvirt_volume" "kube-router-vm1" {
-  name   = "kube-router-vm1.qcow2"
-  pool   = libvirt_pool.kube-router-storage.name
-  source = "${var.image_cache_dir}/base_image.img"
-  format = "qcow2"
-}
-
 data "template_file" "user_data" {
   template = file("${path.module}/configs/cloud_init.cfg")
   vars = {
@@ -109,6 +63,15 @@ resource "libvirt_cloudinit_disk" "commoninit" {
   user_data      = data.template_file.user_data.rendered
   network_config = data.template_file.network_config.rendered
   pool           = libvirt_pool.kube-router-storage.name
+}
+
+######################### Per VM Definitions #########################
+# Disk images for Ubuntu version 20.04 LTS (Focal Fossa)
+resource "libvirt_volume" "kube-router-vm1" {
+  name   = "kube-router-vm1.qcow2"
+  pool   = libvirt_pool.kube-router-storage.name
+  source = "${var.image_cache_dir}/base_image.img"
+  format = "qcow2"
 }
 
 resource "libvirt_domain" "kube-router-vm1" {
