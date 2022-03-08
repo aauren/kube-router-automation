@@ -16,12 +16,16 @@
 - name: Generate containerd Config
   shell: containerd config default | sed -r 's/(SystemdCgroup = )false/\1true/g'
   register: containerd_config
+  args:
+    creates: /etc/containerd/config.toml
 
 - name: Write containerd Config
   copy:
     content: "{{ containerd_config.stdout }}"
     dest: /etc/containerd/config.toml
     mode: '0755'
+  args:
+    creates: /etc/containerd/config.toml
 
 - name: Create containerd kubelet Config Dir
   file:
