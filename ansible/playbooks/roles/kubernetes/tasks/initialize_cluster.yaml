@@ -1,0 +1,32 @@
+---
+
+- name: Create kubeadm Config Dir
+  file:
+    path: /etc/kubeadm
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Get Kubernetes Version
+  shell: kubelet --version | awk '{print $2}'
+  register: kubernetes_version
+
+- name: Generate kubeadm Config
+  template:
+    src: templates/kubeadm-config.yaml.j2
+    dest: /etc/kubeadm/kubeadmconfig.yaml
+
+- name: Check Cluster Status
+  command: kubectl --kubeconfig="/etc/kubernetes/admin.conf" get componentstatuses
+  register: kube_status
+  failed_when: kube_status.rc == 255
+
+- name: Output Cluster Status
+  debug:
+    msg: "Kubernetes cluster is already initialized, skipping"
+  when: kube_status.rc == 0
+
+- name: Create Cluster with kubeadm
+  command: kubeadm init --config /etc/kubeadm/kubeadmconfig.yaml
+  when: kube_status.rc != 0

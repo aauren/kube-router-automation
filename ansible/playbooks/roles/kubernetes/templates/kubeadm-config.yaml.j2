@@ -1,0 +1,18 @@
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+kubernetesVersion: {{ kubernetes_version.stdout }}
+#apiServer:
+#  extraArgs:
+#    feature-gates: NetworkPolicyEndPort=true
+networking:
+  podSubnet: "{{ pod_network | default("10.242.0.0/16", true) }}"
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+nodeRegistration:
+  criSocket: {{ cri_socket | default("/var/run/dockershim.sock", true) }}
+  imagePullPolicy: IfNotPresent
+  taints: null
+# To see more options that could go here, see: https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#config-file
+# You can also see the default values with: kubeadm config print init-defaults

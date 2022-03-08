@@ -12,3 +12,21 @@
       import_role:
         name: kubernetes
         tasks_from: install_kubernetes.yaml
+
+- name: Create Cluster
+  hosts: leaders
+  become: yes
+  tasks:
+    - name: Create Cluster with kubeadm
+      tags:
+        - cluster
+      import_role:
+        name: kubernetes
+        tasks_from: initialize_cluster.yaml
+        vars_from: containerd
+    - name: Setup User Kube Config
+      tags:
+        - user_config
+      import_role:
+        name: kubernetes
+        tasks_from: copy_kubeconfig.yaml
