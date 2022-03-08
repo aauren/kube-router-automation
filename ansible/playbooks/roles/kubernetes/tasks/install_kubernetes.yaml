@@ -18,3 +18,18 @@
       - kubeadm
       - kubectl
     update_cache: yes
+
+# We have some pending sysctl changes that need to be enacted on all systems
+- name: Update sysctl
+  command: sysctl --system
+
+- name: Probe br_netfilter Modules
+  command: modprobe br_netfilter
+
+- name: Ensure br_netfilter Probe Runs on Startup
+  copy:
+    content: "br_netfilter"
+    dest: "/etc/modules-load.d/kubernetes.conf"
+    mode: '0755'
+  args:
+    creates: /etc/modules-load.d/kubernetes.conf
