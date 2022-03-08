@@ -76,16 +76,18 @@ resource "libvirt_cloudinit_disk" "commoninit" {
 
 ######################### Per VM Definitions #########################
 # Disk images for Ubuntu version 20.04 LTS (Focal Fossa)
-resource "libvirt_volume" "kube-router-vm1" {
-  name   = "kube-router-vm1.qcow2"
+resource "libvirt_volume" "kube-router-vm" {
+  for_each = toset(["kube-router-vm1", "kube-router-vm2"])
+  name   = each.key
   pool   = libvirt_pool.kube-router-storage.name
   source = "${var.image_cache_dir}/base_image.img"
   format = "qcow2"
 }
 
-resource "libvirt_domain" "kube-router-vm1" {
+resource "libvirt_domain" "kube-router-vm" {
   for_each = {
     kube-router-vm1 = "10.241.0.10"
+    kube-router-vm2 = "10.241.0.11"
   }
   name   = each.key
   memory = var.memory_size
@@ -95,7 +97,7 @@ resource "libvirt_domain" "kube-router-vm1" {
 
   network_interface {
     network_id     = libvirt_network.kube-router-net.id
-    hostname       = "kube-router-vm1"
+    hostname       = each.key
     addresses      = [each.value]
     wait_for_lease = true
   }
@@ -116,7 +118,7 @@ resource "libvirt_domain" "kube-router-vm1" {
   }
 
   disk {
-    volume_id = libvirt_volume.kube-router-vm1.id
+    volume_id = libvirt_volume.kube-router-vm[each.key].id
   }
 
   graphics {
