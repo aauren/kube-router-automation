@@ -1,8 +1,14 @@
 - name: Setup Base Packages
   hosts: container_runners
   become: yes
+  tags:
+    - setup
   tasks:
-    - name: Setup Containerd
+    - name: Setup & Run Containerd
       import_role:
         name: container_runner
         tasks_from: setup_containerd.yaml
+    - name: Setup Kubernetes
+      import_role:
+        name: kubernetes
+        tasks_from: install_kubernetes.yaml

@@ -1,6 +1,44 @@
 ---
 
-- name: install containerd
+- name: Install containerd
   apt:
     name: containerd
     update_cache: yes
+
+- name: Create containerd Config Dir
+  file:
+    path: /etc/containerd
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Generate containerd Config
+  shell: containerd config default | sed -r 's/(SystemdCgroup = )false/\1true/g'
+  register: containerd_config
+
+- name: Write containerd Config
+  copy:
+    content: "{{ containerd_config.stdout }}"
+    dest: /etc/containerd/config.toml
+    mode: '0755'
+
+- name: Create containerd kubelet Config Dir
+  file:
+    path: /etc/systemd/system/kubelet.service.d
+    state: directory
+    mode: '0750'
+    owner: root
+    group: root
+
+- name: Write containerd Kubelet Config
+  template:
+    src: templates/kubernetes-containerd.conf.j2
+    dest: /etc/systemd/system/kubelet.service.d/0-containerd.conf
+
+- name: Start / Enable containerd Service
+  systemd:
+    name: containerd
+    enabled: yes
+    state: started
+    daemon_reload: yes
