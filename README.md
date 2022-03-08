@@ -3,7 +3,20 @@ Terraform scripts for setting up kube-router in a virtual environment
 
 # Setup
 * Install Terraform: https://learn.hashicorp.com/tutorials/terraform/install-cli
+* Install Ansible: https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html
 * Ensure that `wget` and `qemu-img` commands are installed and available on the host running terraform
+* Add the following to your `/etc/hosts` file so that the hosts are easier to reference:
+```
+10.241.0.10 kube-router-vm1
+10.241.0.11 kube-router-vm2
+10.241.0.12 kube-router-vm3
+```
+* Add the following to your `~/.ssh/config` file so that these hosts changing doesn't cause issues with SSH:
+```
+Host kube-router-vm*
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+```
 * Customize any variables that you want to run differently from the default and place them in the vars file provided
 for you and helpfully excluded from git. See variables section below.
 * From this project repo run: `terraform init`
