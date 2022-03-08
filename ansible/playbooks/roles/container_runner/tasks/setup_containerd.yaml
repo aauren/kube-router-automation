@@ -1,0 +1,6 @@
+---
+
+- name: install containerd
+  apt:
+    name: containerd
+    update_cache: yes

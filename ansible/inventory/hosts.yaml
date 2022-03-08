@@ -1,0 +1,21 @@
+all:
+  hosts:
+    kube-router-vm1:
+    kube-router-vm2:
+    kube-router-vm3:
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  children:
+    container_runners:
+      hosts:
+        kube-router-vm1:
+        kube-router-vm2:
+    leaders:
+      hosts:
+        kube-router-vm1:
+    workers:
+      hosts:
+        kube-router-vm2:
+    bgp_speakers:
+      hosts:
+        kube-router-vm3:

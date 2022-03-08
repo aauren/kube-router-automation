@@ -1,0 +1,8 @@
+- name: Setup Base Packages
+  hosts: container_runners
+  become: yes
+  tasks:
+    - name: Setup Containerd
+      import_role:
+        name: container_runner
+        tasks_from: setup_containerd.yaml
