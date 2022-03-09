@@ -23,6 +23,9 @@ for you and helpfully excluded from git. See variables section below.
 * From this project repo run: `terraform apply -auto-approve -var-file="vars/my_vars.tfvars"`
 * From this project repo run: `ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/kube-router-containerd.yaml`
 
+Once you are all done with your work on kube-router, you can tear down the VMs by running:
+* From this project repo run: `terraform destroy -auto-approve`
+
 # Variables
 * **image_cache_dir** - `/tmp/kube-router-img-cache` - In order to ensure Terraform runs are optimized, the execution
 will download images once on the first run and then continue to use them for all subsequent runs. This defines the
