@@ -1,5 +1,25 @@
 # kube-router-terraform
-Terraform scripts for setting up kube-router in a virtual environment
+Automation scripts (mostly centering around Terraform and Ansible) for setting up kube-router in a virtual environment.
+For this we use the Terraform libvirt provider to spin up some VMs and Ansible to deploy Kubernetes and kube-router to
+those VMs using kubeadm so that we can perform kube-router tests end-to-end.
+
+# Requirements
+* A Linux host that has the following resources available for VMs (this can be tweaked by setting different Terraform
+variables, but performance may suffer):
+  * 6 cores
+  * 9 GB of RAM
+  * 60 GB of available Disk Space
+* libvirt installed and working
+* Your user is in the libvirt group so that you can perform libvirt actions in Terraform
+
+Note: If you are using some OS's (like Ubuntu) that use AppArmor and you are placing your VM disks in an unconventional
+location, you will need to follow the following instructions in order to make it work without an error:
+https://github.com/dmacvicar/terraform-provider-libvirt/issues/920
+
+Specifically, adding something like the following (that contains your VM image path) to: `/etc/apparmor.d/local/abstractions/libvirt-qemu`
+```
+"/data/kvm/**/*qcow2" rwk,
+```
 
 # Setup
 * Install Terraform: https://learn.hashicorp.com/tutorials/terraform/install-cli
@@ -26,7 +46,7 @@ for you and helpfully excluded from git. See variables section below.
 Once you are all done with your work on kube-router, you can tear down the VMs by running:
 * From this project repo run: `terraform destroy -auto-approve`
 
-# Variables
+# Terraform Variables
 * **image_cache_dir** - `/tmp/kube-router-img-cache` - In order to ensure Terraform runs are optimized, the execution
 will download images once on the first run and then continue to use them for all subsequent runs. This defines the
 directory that it will cache them in.
@@ -45,3 +65,6 @@ password authentication is not enabled on the hosts, so setting this is effectiv
 * **user_groups** - `adm` - Additional groups to add the user (identified by `username` above) to
 * **cpu_count** - `2` - Numerical number for how many VCPUs to expose to each VM
 * **memory_size** - `3072` - Number in Megabytes for how much memory to expose to each VM
+
+# Ansible Variables
+See comments in Playbooks
