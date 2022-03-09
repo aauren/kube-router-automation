@@ -21,6 +21,7 @@ Host kube-router-vm*
 for you and helpfully excluded from git. See variables section below.
 * From this project repo run: `terraform init`
 * From this project repo run: `terraform apply -auto-approve -var-file="vars/my_vars.tfvars"`
+* From this project repo run: `ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/kube-router-containerd.yaml`
 
 # Variables
 * **image_cache_dir** - `/tmp/kube-router-img-cache` - In order to ensure Terraform runs are optimized, the execution
