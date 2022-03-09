@@ -1,3 +1,25 @@
+---
+# This Ansible playbook will:
+#   - Setup containerd as the host's runtime
+#   - Install Kubernetes tooling
+#   - Use kubeadm to create a cluster on the node (identified in inventory as "leader")
+#   - Will join any workers to the cluster (identified in inventory as "workers")
+#   - Deploy kube-router from either a file or from the upstream all features manifest
+#
+#
+# Variables available to pass at runtime:
+#   - file_manifest: Allows you to specify a path to a kube-router manifest from file rather than Ansible downloading it from upstream (default: blank)
+#   - kube_proxy_replacement: Allows you to enable / disable kube_proxy_replacement mode (default: true)
+#
+# An invocation of Ansible that uses a variable substitution might look like:
+# ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/kube-router-containerd.yaml --extra-vars "file_manifest=/home/foo/kube-router.yaml"
+#
+# An invocation that skips specific tags might look like:
+# ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/kube-router-containerd.yaml --skip-tags setup,leader
+#
+# An invocation that only runs specific tags might look like:
+# ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/kube-router-containerd.yaml --tags kube-router
+
 - name: Setup Base Packages
   hosts: container_runners
   become: yes
