@@ -31,5 +31,3 @@
     content: "br_netfilter"
     dest: "/etc/modules-load.d/kubernetes.conf"
     mode: '0755'
-  args:
-    creates: /etc/modules-load.d/kubernetes.conf
