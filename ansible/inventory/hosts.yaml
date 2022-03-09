@@ -10,7 +10,10 @@ all:
       hosts:
         kube-router-vm1:
         kube-router-vm2:
-    leaders:
+    controllers:
+      hosts:
+        kube-router-vm1:
+    leader:
       hosts:
         kube-router-vm1:
     workers:

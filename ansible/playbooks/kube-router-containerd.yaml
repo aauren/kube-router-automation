@@ -14,12 +14,13 @@
         tasks_from: install_kubernetes.yaml
 
 - name: Create Cluster
-  hosts: leaders
+  hosts: leader
   become: yes
   tasks:
     - name: Create Cluster with kubeadm
       tags:
         - cluster
+        - leader
       import_role:
         name: kubernetes
         tasks_from: initialize_cluster.yaml
