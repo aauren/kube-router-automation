@@ -1,0 +1,23 @@
+---
+
+- name: Check Worker Status
+  command: kubectl --kubeconfig="/etc/kubernetes/kubelet.conf" get node
+  register: kube_status
+  failed_when: kube_status.rc == 255
+
+- name: Output Cluster Status
+  debug:
+    msg: "Kubernetes worker is already initialized, skipping"
+  when: kube_status.rc == 0
+
+- name: Get Cluster Join Token
+  command: kubeadm token create --print-join-command
+  delegate_to: "{{ item }}"
+  register: join_token
+  loop: "{{ groups['leader'] }}"
+  when: kube_status.rc != 0
+
+- name: Join Cluster with Token
+  # Because we used a loop command (even over just one host) we have to parse results to get to stdout
+  command: "{{ join_token['results'][0]['stdout'] }}"
+  when: kube_status.rc != 0

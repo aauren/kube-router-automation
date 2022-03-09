@@ -7,11 +7,11 @@
     - name: Setup & Run Containerd
       import_role:
         name: container_runner
-        tasks_from: setup_containerd.yaml
+        tasks_from: setup_containerd
     - name: Setup Kubernetes
       import_role:
         name: kubernetes
-        tasks_from: install_kubernetes.yaml
+        tasks_from: install_kubernetes
 
 - name: Create Cluster
   hosts: leader
@@ -23,11 +23,31 @@
         - leader
       import_role:
         name: kubernetes
-        tasks_from: initialize_cluster.yaml
+        tasks_from: initialize_cluster
         vars_from: containerd
     - name: Setup User Kube Config
       tags:
         - user_config
       import_role:
         name: kubernetes
-        tasks_from: copy_kubeconfig.yaml
+        tasks_from: copy_kubeconfig
+
+- name: Join Cluster with Remaining Nodes
+  hosts: workers
+  become: yes
+  serial: 1
+  tasks:
+    - name: Join Cluster with kubeadm
+      tags:
+        - cluster
+        - workers
+      import_role:
+        name: kubernetes
+        tasks_from: join_cluster
+        vars_from: containerd
+    - name: Setup User Kube Config
+      tags:
+        - user_config
+      import_role:
+        name: kubernetes
+        tasks_from: copy_kubeconfig
