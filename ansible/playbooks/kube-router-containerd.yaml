@@ -51,3 +51,29 @@
       import_role:
         name: kubernetes
         tasks_from: copy_kubeconfig
+
+- name: Deploy kube-router
+  hosts: leader
+  serial: 1
+  tasks:
+    - name: Deploy Upstream kube-router
+      tags:
+        - kube-router
+      import_role:
+        name: kube_router
+        tasks_from: deploy_kube_router
+      vars:
+        cri: containerd
+
+- name: Cleanup kube-proxy
+  hosts: container_runners
+  become: yes
+  tasks:
+    - name: Cleanup kube-proxy
+      tags:
+        - kube-router
+        - cleanup
+      import_role:
+        name: kube_router
+        tasks_from: cleanup_kube_proxy
+      when: kube_proxy_replacement == true

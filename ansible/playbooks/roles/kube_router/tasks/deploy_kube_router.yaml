@@ -1,0 +1,28 @@
+---
+
+- name: Create Manifest Dir
+  file:
+    path: "{{ lookup('env', 'HOME') }}/manifests"
+    state: directory
+    mode: '0750'
+
+- name: Get kube-router Manifest from Upstream
+  get_url:
+    url: "{{ manifest }}"
+    dest: "{{ lookup('env', 'HOME') }}/manifests/kube-router.yaml"
+  when: file_manifest is not defined
+
+- name: Send Local kube-router Manifest to Remote
+  copy:
+    src: "{{ file_manifest }}"
+    dest: "{{ lookup('env', 'HOME') }}/manifests/kube-router.yaml"
+  when: file_manifest is defined
+
+- name: Deploy kube-router Manifest
+  command: kubectl apply -f {{ lookup('env', 'HOME') }}/manifests/kube-router.yaml
+
+- name: Remove kube-proxy
+  command: kubectl -n kube-system delete daemonset kube-proxy
+  when: kube_proxy_replacement == true
+  register: kube_status
+  failed_when: kube_status.rc == 255
