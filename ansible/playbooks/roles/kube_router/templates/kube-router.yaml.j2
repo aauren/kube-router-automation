@@ -67,6 +67,7 @@ spec:
         - --cluster-asn={{ bgp_asn }}
         - --service-external-ip-range={{ external_ip_range }}
         - --advertise-external-ip=true
+        - -v=1
         env:
         - name: NODE_NAME
           valueFrom:
