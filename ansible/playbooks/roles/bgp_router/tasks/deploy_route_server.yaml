@@ -1,0 +1,26 @@
+---
+
+- name: Install FRR
+  apt:
+    name: frr
+    update_cache: yes
+
+- name: Enable BGP Daemon in FRR
+  lineinfile:
+    path: /etc/frr/daemons
+    regexp: '^bgpd'
+    line: bgpd=yes
+
+- name: Template FRR Configuration File
+  vars:
+    bgp_peers: "{{ groups['container_runners'] }}"
+  template:
+    src: templates/frr.conf.j2
+    dest: /etc/frr/frr.conf
+
+- name: Restart / Enable FRR Service
+  systemd:
+    name: frr
+    enabled: yes
+    state: restarted
+    daemon_reload: yes

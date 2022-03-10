@@ -1,0 +1,2 @@
+external_ip_range: 10.243.0.0/24
+bgp_asn: 4200000001

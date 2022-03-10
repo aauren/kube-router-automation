@@ -10,6 +10,22 @@
 # Variables available to pass at runtime:
 #   - file_manifest: Allows you to specify a path to a kube-router manifest from file rather than Ansible downloading it from upstream (default: blank)
 #   - kube_proxy_replacement: Allows you to enable / disable kube_proxy_replacement mode (default: true)
+#   - external_ip_range: Allows you to set the allowed External IP range for kube-router to use (default: 10.243.0.0/24)
+#   - bgp_asn: Allows you to set the default BGP ASN that kube-router and FRR will use (default: 4200000001)
+#   - bgp_router_enabled: Enables / Disables peering kube-router with BGP route server for testing announced IPs (default: true)
+#
+# Tags in Playbook:
+#   - setup: Basic setup tasks for host config, containerd, and frr
+#   - baseline: Configs specific to Linux like hostname setting and sysctl application
+#   - containerd: Installs / Configures / Runs containerd
+#   - kubernetes: Installs / Configures kubernetes
+#   - cluster: Governs the items related to kubeadm that make the cluster and allow workers to join it
+#   - leader: Creates the Kubernetes control plane and initializing the cluster using kubeadm
+#   - workers: Joins all of the workers to the control plane
+#   - kube-router: Deploys kube-router to the cluster and potentially un-deploys kube-proxy (depending on kube_proxy_replacement variable)
+#   - cleanup: Removes kube-proxy from the cluster (depending on kube_proxy_replacement variable)
+#   - bgp_router: Installs / Configures / Runs FRR to provide route server functionality
+#   - manifests: Deploys manifests from the top level manifests directory
 #
 # An invocation of Ansible that uses a variable substitution might look like:
 # ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/kube-router-containerd.yaml --extra-vars "file_manifest=/home/foo/kube-router.yaml"
@@ -39,10 +55,14 @@
     - setup
   tasks:
     - name: Setup & Run Containerd
+      tags:
+        - containerd
       import_role:
         name: container_runner
         tasks_from: setup_containerd
     - name: Setup Kubernetes
+      tags:
+        - kubernetes
       import_role:
         name: kubernetes
         tasks_from: install_kubernetes
@@ -89,6 +109,8 @@
 - name: Deploy kube-router
   hosts: leader
   serial: 1
+  vars_files:
+    - vars/common_vars.yaml
   tasks:
     - name: Deploy Upstream kube-router
       tags:
@@ -98,6 +120,9 @@
         tasks_from: deploy_kube_router
       vars:
         cri: containerd
+        bgp_router_enabled: true
+        deploy_from_local_template: true
+        kube_proxy_replacement: true
 
 - name: Cleanup kube-proxy
   hosts: container_runners
@@ -111,3 +136,29 @@
         name: kube_router
         tasks_from: cleanup_kube_proxy
       when: kube_proxy_replacement == true
+      vars:
+        kube_proxy_replacement: true
+
+- name: Deploy BGP Route Server
+  hosts: bgp_routers
+  become: yes
+  vars_files:
+    - vars/common_vars.yaml
+  tasks:
+    - name: Configure / Deploy BGP Route Server
+      tags:
+        - bgp-router
+        - setup
+      import_role:
+        name: bgp_router
+        tasks_from: deploy_route_server
+
+- name: Deploy Misc Manifests
+  hosts: leader
+  tasks:
+    - name: Deploy Misc Manifests to Cluster
+      tags:
+        - manifests
+      import_role:
+        name: manifests
+        tasks_from: deploy_manifests

@@ -3,5 +3,5 @@
 #manifest: https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
 
 # For having all features of kube-router enabled
-kube_proxy_replacement: true
 manifest: https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter-all-features.yaml
+bgp_peer_ips: 10.241.0.10
