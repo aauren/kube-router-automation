@@ -2,7 +2,7 @@ all:
   hosts:
     kube-router-vm1:
     kube-router-vm2:
-    kube-router-vm3:
+    bgp-route-vm1:
   vars:
     ansible_python_interpreter: /usr/bin/python3
   children:
@@ -19,6 +19,6 @@ all:
     workers:
       hosts:
         kube-router-vm2:
-    bgp_speakers:
+    bgp_routers:
       hosts:
-        kube-router-vm3:
+        bgp-route-vm1:

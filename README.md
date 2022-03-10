@@ -27,13 +27,16 @@ Specifically, adding something like the following (that contains your VM image p
 * Ensure that `wget` and `qemu-img` commands are installed and available on the host running terraform
 * Add the following to your `/etc/hosts` file so that the hosts are easier to reference:
 ```
-10.241.0.10 kube-router-vm1
-10.241.0.11 kube-router-vm2
-10.241.0.12 kube-router-vm3
+10.241.0.10 bgp-route-vm1
+10.241.0.20 kube-router-vm1
+10.241.0.21 kube-router-vm2
 ```
 * Add the following to your `~/.ssh/config` file so that these hosts changing doesn't cause issues with SSH:
 ```
 Host kube-router-vm*
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+Host bgp-route-vm*
   StrictHostKeyChecking no
   UserKnownHostsFile /dev/null
 ```
@@ -63,8 +66,10 @@ absolutely be changed, especially if exposing to another network.
 * **user_ssh_key** - NO_DEFAULT_SET - The SSH key that you want to use if you intend to SSH to this VM. By default,
 password authentication is not enabled on the hosts, so setting this is effectively the only way to SSH to this host.
 * **user_groups** - `adm` - Additional groups to add the user (identified by `username` above) to
-* **cpu_count** - `2` - Numerical number for how many VCPUs to expose to each VM
-* **memory_size** - `3072` - Number in Megabytes for how much memory to expose to each VM
+* **cpu_count** - `2` - Numerical number for how many VCPUs to expose to each Kubernetes host VM
+* **memory_size** - `3072` - Number in Megabytes for how much memory to expose to each Kubernetes host VM
+* **bgp_cpu_count** - `1` - Numerical number for how many VCPUs to expose to each BGP route server VM
+* **bgp_memory_size** - `1024` - Number in Megabytes for how much memory to expose to each BGP route server VM
 
 # Ansible Variables
 See comments in Playbooks

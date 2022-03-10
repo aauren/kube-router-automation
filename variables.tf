@@ -48,3 +48,13 @@ variable "memory_size" {
   type    = number
   default = 3072
 }
+
+variable "bgp_memory_size" {
+  type    = number
+  default = 1024
+}
+
+variable "bgp_cpu_count" {
+  type    = number
+  default = 1
+}

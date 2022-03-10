@@ -74,8 +74,7 @@ resource "libvirt_cloudinit_disk" "commoninit" {
 }
 
 
-######################### Per VM Definitions #########################
-# Disk images for Ubuntu version 20.04 LTS (Focal Fossa)
+######################### Per kube-router VM Definitions #########################
 resource "libvirt_volume" "kube-router-vm" {
   for_each = toset(["kube-router-vm1", "kube-router-vm2"])
   name   = each.key
@@ -86,8 +85,8 @@ resource "libvirt_volume" "kube-router-vm" {
 
 resource "libvirt_domain" "kube-router-vm" {
   for_each = {
-    kube-router-vm1 = "10.241.0.10"
-    kube-router-vm2 = "10.241.0.11"
+    kube-router-vm1 = "10.241.0.20"
+    kube-router-vm2 = "10.241.0.21"
   }
   name   = each.key
   memory = var.memory_size
@@ -119,6 +118,58 @@ resource "libvirt_domain" "kube-router-vm" {
 
   disk {
     volume_id = libvirt_volume.kube-router-vm[each.key].id
+  }
+
+  graphics {
+    type        = "spice"
+    listen_type = "address"
+    autoport    = true
+  }
+}
+
+######################### Per bgp-router VM Definitions #########################
+resource "libvirt_volume" "bgp-router" {
+  for_each = toset(["bgp-route-vm1"])
+  name   = each.key
+  pool   = libvirt_pool.kube-router-storage.name
+  source = "${var.image_cache_dir}/base_image.img"
+  format = "qcow2"
+}
+
+resource "libvirt_domain" "bgp-router-vm" {
+  for_each = {
+    bgp-route-vm1 = "10.241.0.10"
+  }
+  name   = each.key
+  memory = var.bgp_memory_size
+  vcpu   = var.bgp_cpu_count
+
+  cloudinit = libvirt_cloudinit_disk.commoninit.id
+
+  network_interface {
+    network_id     = libvirt_network.kube-router-net.id
+    hostname       = each.key
+    addresses      = [each.value]
+    wait_for_lease = true
+  }
+
+  # IMPORTANT: this is a known bug on cloud images, since they expect a console
+  # we need to pass it
+  # https://bugs.launchpad.net/cloud-images/+bug/1573095
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+
+  console {
+    type        = "pty"
+    target_type = "virtio"
+    target_port = "1"
+  }
+
+  disk {
+    volume_id = libvirt_volume.bgp-router[each.key].id
   }
 
   graphics {
