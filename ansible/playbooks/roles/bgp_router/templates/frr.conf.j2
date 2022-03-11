@@ -27,6 +27,11 @@ router bgp {{ bgp_asn }}
   # Ensure that when comparing routes where both are equal on most metrics, that the tie is broken based on router ID
   bgp bestpath compare-routerid
 !
+  # Enable BGP Graceful Restart
+  bgp graceful-restart
+  bgp graceful-restart preserve-fw-state
+  bgp graceful-restart restart-time 300
+!
   # Setup peer groups
   neighbor kubepeers peer-group
   neighbor kubepeers remote-as {{ bgp_asn }}
