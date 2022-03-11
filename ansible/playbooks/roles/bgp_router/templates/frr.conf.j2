@@ -28,35 +28,58 @@ router bgp {{ bgp_asn }}
   bgp bestpath compare-routerid
 !
   # Setup peer groups
-  neighbor V4 peer-group
-  neighbor V4 remote-as {{ bgp_asn }}
+  neighbor kubepeers peer-group
+  neighbor kubepeers remote-as {{ bgp_asn }}
 !
   # Add peers
   {% for peer in bgp_peers %}
-{{ "neighbor " + hostvars[peer].ansible_ens3.ipv4.address + " peer-group V4" | indent(2, true) }}
+{{ "neighbor " + hostvars[peer].ansible_ens3.ipv4.address + " peer-group kubepeers" | indent(2, true) }}
   {% endfor %}
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! Configure IPv4 family
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 address-family ipv4 unicast
-  # Activate ipv4 for the V4 peer groups
-  neighbor V4 activate
+  # Activate ipv4 for the kubepeers peer groups
+  neighbor kubepeers activate
 !
   # Setup this configuration as a route-server, see:
   # https://docs.frrouting.org/en/latest/bgp.html#configuring-frr-as-a-route-server
-  neighbor V4 route-server-client
+  neighbor kubepeers route-server-client
 !
   # Filter imports & exports via route-map first
-  neighbor V4 route-map IMPORT in
-  neighbor V4 route-map EXPORT out
+  neighbor kubepeers route-map IMPORTv4 in
+  neighbor kubepeers route-map UNACCEPTED out
 !
   # "import" and "export" are different than the normal "in" and "out" definitions that we normally see in policy
   # This is tied to route-server-client definition above
-  neighbor V4 route-map IMPORT import
-  neighbor V4 route-map EXPORT export
+  neighbor kubepeers route-map IMPORTv4 import
+  neighbor kubepeers route-map UNACCEPTED export
 !
   # Allows us to generate inbound updates from a neighbor, change and activate BGP policies without clearing the BGP session
-  neighbor V4 soft-reconfiguration inbound
+  neighbor kubepeers soft-reconfiguration inbound
+exit-address-family
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Configure IPv6 family
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+address-family ipv6 unicast
+  # Activate ipv6 for the kubepeers peer groups
+  neighbor kubepeers activate
+!
+  # Setup this configuration as a route-server, see:
+  # https://docs.frrouting.org/en/latest/bgp.html#configuring-frr-as-a-route-server
+  neighbor kubepeers route-server-client
+!
+  # Filter imports & exports via route-map first
+  neighbor kubepeers route-map IMPORTv6 in
+  neighbor kubepeers route-map UNACCEPTED out
+!
+  # "import" and "export" are different than the normal "in" and "out" definitions that we normally see in policy
+  # This is tied to route-server-client definition above
+  neighbor kubepeers route-map IMPORTv6 import
+  neighbor kubepeers route-map UNACCEPTED export
+!
+  # Allows us to generate inbound updates from a neighbor, change and activate BGP policies without clearing the BGP session
+  neighbor kubepeers soft-reconfiguration inbound
 exit-address-family
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! Setup IP Prefix lists
@@ -70,13 +93,20 @@ ip prefix-list pl-allowed-adv seq 10 permit {{ pod_network }} le 24
 # ip prefix-list pl-allowed-adv seq 15 permit 10.96.0.0/12 le 32
 # Deny all other BGP imports
 ip prefix-list pl-allowed-adv seq 50 deny any
+!
+# Not exactly sure how to configure this just yet, but this is a rough attempt for IPv6 testing
+ipv6 prefix-lists pl-allowed-v6-adv seq  5 permit 2001:0DB8:0000::/48 le 64
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! Setup Route Maps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Allows us to filter imports from the prefix-list
-route-map IMPORT permit 10
+route-map IMPORTv4 permit 10
   match ip address prefix-list pl-allowed-adv
   set metric 10
 !
+route-map IMPORTv6 permit 10
+  match ipv6 address prefix-list pl-allowed-v6-adv
+  set metric 10
+!
 # Deny any export paths
-route-map EXPORT deny 1
+route-map UNACCEPTED deny 1
