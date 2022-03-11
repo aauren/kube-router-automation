@@ -17,13 +17,15 @@ router bgp {{ bgp_asn }}
 address-family ipv4 unicast
   neighbor V4 activate
   neighbor V4 route-server-client
-#  neighbor V4 prefix-list pl-allowed-adv in
+  # Filter imports & exports via route-map first
+  neighbor V4 route-map IMPORT in
+  neighbor V4 route-map EXPORT out
   neighbor V4 route-map IMPORT import
   neighbor V4 route-map EXPORT export
   neighbor V4 soft-reconfiguration inbound
 exit-address-family
 !
-ip prefix-list pl-allowed-adv seq 5 permit {{ external_ip_range }}
+ip prefix-list pl-allowed-adv seq 5 permit {{ external_ip_range }} le 32
 ip prefix-list pl-allowed-adv seq 50 deny any
 !
 route-map IMPORT permit 10
