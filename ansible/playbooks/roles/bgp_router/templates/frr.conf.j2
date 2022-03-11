@@ -26,6 +26,8 @@ address-family ipv4 unicast
 exit-address-family
 !
 ip prefix-list pl-allowed-adv seq 5 permit {{ external_ip_range }} le 32
+ip prefix-list pl-allowed-adv seq 10 permit {{ pod_network }} le 24
+# ip prefix-list pl-allowed-adv seq 15 permit 10.96.0.0/12 le 32
 ip prefix-list pl-allowed-adv seq 50 deny any
 !
 route-map IMPORT permit 10
