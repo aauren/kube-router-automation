@@ -1,37 +1,82 @@
 # default to using syslog. /etc/rsyslog.d/45-frr.conf places the log
 # in /var/log/frr/frr.log
+# In FRR both ! and # are considered comment characters and can be treated the same
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Base Config for FRR as a whole
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Reflects defaults adhering mostly to IETF standards or common practices in wide-area internet routing
+# (as opposed to datacenter which reflects a single administrative domain and uses aggressive timers)
 frr defaults traditional
-log syslog informational
-service integrated-vtysh-config
 !
+# Logs to syslog at an informational level
+# (other values are: emergencies, alerts, critical, errors, warnings, notifications, informational, or debugging)
+log syslog informational
+!
+# Puts all configuration into this single frr.conf file rather than having a separate config per daemon
+service integrated-vtysh-config
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Basic BGP config to setup neighbors and peer groups
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 router bgp {{ bgp_asn }}
+  # ID ourselves as our default IPv4 Address
   bgp router-id {{ ansible_ens3.ipv4.address }}
+!
+  # Consider paths of equal AS_PATH length candidates for multipath computation (without this, the entire AS_PATH must
+  # match for multipath computation
   bgp bestpath as-path multipath-relax
+  # Ensure that when comparing routes where both are equal on most metrics, that the tie is broken based on router ID
   bgp bestpath compare-routerid
+!
+  # Setup peer groups
   neighbor V4 peer-group
   neighbor V4 remote-as {{ bgp_asn }}
+!
+  # Add peers
   {% for peer in bgp_peers %}
 {{ "neighbor " + hostvars[peer].ansible_ens3.ipv4.address + " peer-group V4" | indent(2, true) }}
   {% endfor %}
-!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Configure IPv4 family
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 address-family ipv4 unicast
+  # Activate ipv4 for the V4 peer groups
   neighbor V4 activate
+!
+  # Setup this configuration as a route-server, see:
+  # https://docs.frrouting.org/en/latest/bgp.html#configuring-frr-as-a-route-server
   neighbor V4 route-server-client
+!
   # Filter imports & exports via route-map first
   neighbor V4 route-map IMPORT in
   neighbor V4 route-map EXPORT out
+!
+  # "import" and "export" are different than the normal "in" and "out" definitions that we normally see in policy
+  # This is tied to route-server-client definition above
   neighbor V4 route-map IMPORT import
   neighbor V4 route-map EXPORT export
+!
+  # Allows us to generate inbound updates from a neighbor, change and activate BGP policies without clearing the BGP session
   neighbor V4 soft-reconfiguration inbound
 exit-address-family
-!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Setup IP Prefix lists
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Allow external IP range and allows /32 addresses to be specified
 ip prefix-list pl-allowed-adv seq 5 permit {{ external_ip_range }} le 32
+# Allow pod IP addresses and allows /24 addresses to be specified (which is the default from kube-controller-manager)
 ip prefix-list pl-allowed-adv seq 10 permit {{ pod_network }} le 24
+# Allow Cluster IP Addresses (from Kubernetes default range) and allows /32 addresses to be specified
+# This is disabled for now, but in order for this to work, kube-router would need to be configured with: --advertise-cluster-ip
 # ip prefix-list pl-allowed-adv seq 15 permit 10.96.0.0/12 le 32
+# Deny all other BGP imports
 ip prefix-list pl-allowed-adv seq 50 deny any
-!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Setup Route Maps
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Allows us to filter imports from the prefix-list
 route-map IMPORT permit 10
   match ip address prefix-list pl-allowed-adv
   set metric 10
 !
+# Deny any export paths
 route-map EXPORT deny 1
