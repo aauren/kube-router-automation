@@ -54,3 +54,14 @@
       import_role:
         name: kube_router
         tasks_from: deploy_custom_kube_router
+
+- name: Cleanup kube-router
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vars/common_build_vars.yaml
+  tasks:
+    - name: Build & Test kube-router
+      import_role:
+        name: builder
+        tasks_from: cleanup
