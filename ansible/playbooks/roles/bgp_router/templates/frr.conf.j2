@@ -32,6 +32,6 @@ ip prefix-list pl-allowed-adv seq 50 deny any
 !
 route-map IMPORT permit 10
   match ip address prefix-list pl-allowed-adv
-  set metric 100
+  set metric 10
 !
 route-map EXPORT deny 1
