@@ -25,7 +25,7 @@
   when: file_manifest is not defined and deploy_from_local_template is defined
 
 - name: Deploy kube-router Manifest
-  command: kubectl apply -f {{ lookup('env', 'HOME') }}/manifests/kube-router.yaml
+  command: kubectl apply -f {{ ansible_env.HOME }}/manifests/kube-router.yaml
 
 - name: Remove kube-proxy
   command: kubectl -n kube-system delete daemonset kube-proxy
