@@ -1,0 +1,34 @@
+---
+
+- name: Set Git Directory Default
+  set_fact:
+    repo_path: "{{ ansible_env.HOME }}/{{ kr_repo_path }}"
+  when: kr_repo_path.find("home") == -1
+
+- name: Set Git Directory Custom
+  set_fact:
+    repo_path: "{{ kr_repo_path }}"
+  when: kr_repo_path.find("home") != -1
+
+- name: Push Container .tar to Worker
+  copy:
+    src: "{{ repo_path }}/kube-router.tar"
+    dest: "{{ ansible_env.HOME }}"
+    mode: '0640'
+
+- name: Add Image to Containerd
+  become: yes
+  shell:
+    cmd: ctr --namespace k8s.io image import {{ ansible_env.HOME }}/kube-router.tar
+  when: cri == "containerd"
+
+- name: Add Image to Docker
+  become: yes
+  shell:
+    cmd: docker load -i {{ ansible_env.HOME }}/kube-router.tar
+  when: cri == "docker"
+
+- name: Remove kube-router .tar From Remote Host
+  file:
+    path: "{{ ansible_env.HOME }}/kube-router.tar"
+    state: absent

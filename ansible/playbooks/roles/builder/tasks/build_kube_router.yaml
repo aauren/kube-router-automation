@@ -1,0 +1,28 @@
+---
+
+- name: Set Git Directory Default
+  set_fact:
+    repo_path: "{{ ansible_env.HOME }}/{{ kr_repo_path }}"
+  when: kr_repo_path.find("home") == -1
+
+- name: Set Git Directory Custom
+  set_fact:
+    repo_path: "{{ kr_repo_path }}"
+  when: kr_repo_path.find("home") != -1
+
+- name: Clean Up Artifacts
+  shell:
+    chdir: "{{ repo_path }}"
+    cmd: make clean
+  when: clean is defined
+
+- name: Run Lint & Tests (optional)
+  shell:
+    chdir: "{{ repo_path }}"
+    cmd: make gofmt lint test
+  when: testing is defined
+
+- name: Build kube-router
+  shell:
+    chdir: "{{ repo_path }}"
+    cmd: CGO_ENABLED=0 {{ go_ver | default("go", true) }} build -gcflags="all=-N -l" -o kube-router cmd/kube-router/kube-router.go

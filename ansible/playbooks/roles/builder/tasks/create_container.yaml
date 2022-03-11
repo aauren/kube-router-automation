@@ -1,0 +1,30 @@
+---
+
+- name: Set Git Directory Default
+  set_fact:
+    repo_path: "{{ ansible_env.HOME }}/{{ kr_repo_path }}"
+  when: kr_repo_path.find("home") == -1
+
+- name: Set Git Directory Custom
+  set_fact:
+    repo_path: "{{ kr_repo_path }}"
+  when: kr_repo_path.find("home") != -1
+
+- name: Create Container
+  shell:
+    chdir: "{{ repo_path }}"
+    cmd: make container
+  register: container_build_out
+
+- name: Find Container Name
+  set_fact:
+    container_name: "{{ container_build_out.stdout_lines[-2] | regex_search('^Successfully tagged (.*)$', '\\1') | first }}"
+
+- name: Container Name
+  debug:
+    msg: 'Found container name: {{ container_name }}'
+
+- name: Export Container
+  shell:
+    chdir: "{{ repo_path }}"
+    cmd: docker save -o kube-router.tar {{ container_name }}
