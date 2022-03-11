@@ -70,6 +70,8 @@
 - name: Create Cluster
   hosts: leader
   become: yes
+  vars_files:
+    - vars/common_vars.yaml
   tasks:
     - name: Create Cluster with kubeadm
       tags:
