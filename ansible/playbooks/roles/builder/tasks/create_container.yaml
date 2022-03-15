@@ -20,11 +20,23 @@
   set_fact:
     container_name: "{{ container_build_out.stdout_lines[-2] | regex_search('^Successfully tagged (.*)$', '\\1') | first }}"
 
-- name: Container Name
+- name: Container Name from Build
   debug:
     msg: 'Found container name: {{ container_name }}'
+
+- name: Create Unique Tag
+  set_fact:
+    unique_container_name: "{{ container_name }}-{{ 999999 | random | to_uuid }}"
+
+- name: Unique Container Name
+  debug:
+    msg: 'Found container name: {{ unique_container_name }}'
+
+- name: Make Container Tag Unique
+  shell:
+    cmd: docker tag {{ container_name }} {{ unique_container_name }}
 
 - name: Export Container
   shell:
     chdir: "{{ repo_path }}"
-    cmd: docker save -o kube-router.tar {{ container_name }}
+    cmd: docker save -o kube-router.tar {{ unique_container_name }}

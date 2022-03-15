@@ -2,7 +2,7 @@
 
 - name: Get Container Name as Fact
   set_fact:
-    container_name: "{{ hostvars['localhost']['container_name'] }}"
+    container_name: "{{ hostvars['localhost']['unique_container_name'] }}"
 
 - name: Render Local Change Image Patch
   template:
