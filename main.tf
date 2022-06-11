@@ -37,7 +37,7 @@ resource "libvirt_pool" "kube-router-storage" {
 resource "libvirt_network" "kube-router-net" {
   name      = "kube-router-net"
   mode      = "nat"
-  domain    = "k8s.local"
+  #domain    = "k8s.local"
   #addresses = ["10.241.0.0/16", "2001:db8:ca2:2::/64"]
   addresses = ["10.241.0.0/16"]
   dns {
