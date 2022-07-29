@@ -51,7 +51,7 @@ variable "memory_size" {
 
 variable "bgp_memory_size" {
   type    = number
-  default = 1024
+  default = 512
 }
 
 variable "bgp_cpu_count" {
