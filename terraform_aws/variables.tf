@@ -68,6 +68,6 @@ variable "ami_filter" {
   type = list(any)
   default = [{
     name  = "name"
-    value = "amzn-ami-hvm-*-x86_64-gp2"
+    value = "ubuntu-minimal/images/hvm-ssd/ubuntu-jammy-*-amd64-minimal-*"
   }]
 }
