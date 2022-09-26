@@ -115,6 +115,7 @@ resource "aws_instance" "kube-controller" {
   subnet_id                   = local.multiple_instances.controller.subnet_id
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
   associate_public_ip_address = true
+  user_data                   = file("${path.module}/configs/cloud_init.cfg")
 
   root_block_device {
     encrypted   = local.multiple_instances.controller.root_block_device.encrypted
@@ -139,6 +140,7 @@ resource "aws_instance" "kube-worker" {
   subnet_id                   = local.multiple_instances.worker.subnet_id
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
   associate_public_ip_address = true
+  user_data                   = file("${path.module}/configs/cloud_init.cfg")
 
   root_block_device {
     encrypted   = local.multiple_instances.worker.root_block_device.encrypted
@@ -163,6 +165,7 @@ resource "aws_instance" "bgp-receiver" {
   subnet_id                   = local.multiple_instances.bgp.subnet_id
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
   associate_public_ip_address = true
+  user_data                   = file("${path.module}/configs/cloud_init.cfg")
 
   root_block_device {
     encrypted   = local.multiple_instances.bgp.root_block_device.encrypted
