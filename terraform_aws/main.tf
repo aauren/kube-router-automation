@@ -67,7 +67,10 @@ data "aws_ami" "amazon_linux" {
     }
   }
 
-  tags = var.tags
+  tags = merge(
+    { "Name" = var.name },
+    var.tags
+  )
 }
 
 resource "aws_security_group" "web-sg" {
@@ -87,7 +90,10 @@ resource "aws_security_group" "web-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = var.tags
+  tags = merge(
+    { "Name" = var.name },
+    var.tags
+  )
 }
 
 module "ec2_multiple" {

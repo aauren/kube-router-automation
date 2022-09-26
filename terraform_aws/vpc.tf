@@ -4,13 +4,19 @@ resource "aws_vpc" "kube_router_main" {
   enable_dns_support   = true
   enable_dns_hostnames = true
 
-  tags = var.tags
+  tags = merge(
+    { "Name" = var.name },
+    var.tags
+  )
 }
 
 resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.kube_router_main.id
 
-  tags = var.tags
+  tags = merge(
+    { "Name" = var.name },
+    var.tags
+  )
 }
 
 resource "aws_subnet" "public" {
@@ -21,7 +27,10 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
   availability_zone       = element(keys(local.public_subnets), count.index)
 
-  tags = var.tags
+  tags = merge(
+    { "Name" = var.name },
+    var.tags
+  )
 }
 
 resource "aws_subnet" "private" {
@@ -32,13 +41,19 @@ resource "aws_subnet" "private" {
   map_public_ip_on_launch = true
   availability_zone       = element(keys(local.private_subnets), count.index)
 
-  tags = var.tags
+  tags = merge(
+    { "Name" = var.name },
+    var.tags
+  )
 }
 
 resource "aws_default_route_table" "public" {
   default_route_table_id = aws_vpc.kube_router_main.main_route_table_id
 
-  tags = var.tags
+  tags = merge(
+    { "Name" = var.name },
+    var.tags
+  )
 }
 
 resource "aws_route" "kube_router_internet" {
@@ -61,20 +76,29 @@ resource "aws_route_table_association" "public" {
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.kube_router_main.id
 
-  tags = var.tags
+  tags = merge(
+    { "Name" = var.name },
+    var.tags
+  )
 }
 
 resource "aws_eip" "nat" {
   vpc = true
 
-  tags = var.tags
+  tags = merge(
+    { "Name" = var.name },
+    var.tags
+  )
 }
 
 resource "aws_nat_gateway" "kube_router_nat_gw" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public.0.id
 
-  tags = var.tags
+  tags = merge(
+    { "Name" = var.name },
+    var.tags
+  )
 }
 
 resource "aws_route" "private_nat_gateway" {
