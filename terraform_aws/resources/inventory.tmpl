@@ -1,0 +1,19 @@
+aws-controller ansible_host=${ controller } ansible_user=ec2-user ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+aws-worker ansible_host=${ worker } ansible_user=ec2-user ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+aws-bgp ansible_host=${ bgp } ansible_user=ec2-user ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+[container_runners]
+aws-controller
+aws-worker
+
+[controllers]
+aws-controller
+
+[leader]
+aws-controller
+
+[workers]
+aws-worker
+
+[bgp_routers]
+aws-bgp

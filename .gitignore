@@ -38,3 +38,6 @@ vars/*
 
 # Ignore manifests directory
 /manifests/*
+
+# Ignore aws inventories
+/ansible/inventory/aws.yaml
