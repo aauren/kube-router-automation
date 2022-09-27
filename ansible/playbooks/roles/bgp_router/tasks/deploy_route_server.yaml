@@ -1,5 +1,11 @@
 ---
 
+- name: Ensure syslog User Exists
+  user:
+    name: syslog
+    shell: /usr/sbin/nologin
+    home: /nonexistent
+
 - name: Install FRR
   apt:
     name: frr
