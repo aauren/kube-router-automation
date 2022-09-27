@@ -19,7 +19,7 @@ service integrated-vtysh-config
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 router bgp {{ bgp_asn }}
   # ID ourselves as our default IPv4 Address
-  bgp router-id {{ ansible_ens3.ipv4.address }}
+  bgp router-id {{ ansible_default_ipv4.address }}
 !
   # Consider paths of equal AS_PATH length candidates for multipath computation (without this, the entire AS_PATH must
   # match for multipath computation
@@ -38,7 +38,7 @@ router bgp {{ bgp_asn }}
 !
   # Add peers
   {% for peer in bgp_peers %}
-{{ "neighbor " + hostvars[peer].ansible_ens3.ipv4.address + " peer-group kubepeers" | indent(2, true) }}
+{{ "neighbor " + hostvars[peer].ansible_default_ipv4.address + " peer-group kubepeers" | indent(2, true) }}
   {% endfor %}
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! Configure IPv4 family
