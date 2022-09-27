@@ -92,6 +92,20 @@ resource "aws_security_group" "web-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 0
+    to_port     = 6443
+    protocol    = "tcp"
+    cidr_blocks = [var.cidr_block]
+  }
+
+  ingress {
+    from_port   = 0
+    to_port     = 6443
+    protocol    = "udp"
+    cidr_blocks = [var.cidr_block]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
