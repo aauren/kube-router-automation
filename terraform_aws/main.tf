@@ -1,6 +1,7 @@
 provider "aws" {
   region = var.region
 }
+provider "local" {}
 
 locals {
   public_subnets = {

@@ -1,5 +1,3 @@
-provider "local" {}
-
 resource "local_file" "ansible_inventory" {
   depends_on = [
     aws_instance.kube-controller,
