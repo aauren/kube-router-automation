@@ -1,0 +1,17 @@
+Host aws-controller
+  Hostname ${ controller }
+  User ubuntu
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+Host aws-worker
+  Hostname ${ worker }
+  User ubuntu
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+Host aws-bgp
+  Hostname ${ bgp }
+  User ubuntu
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
