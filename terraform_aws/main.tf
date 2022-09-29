@@ -16,8 +16,8 @@ locals {
   multiple_instances = {
     controller = {
       instance_type     = var.kube_worker_instance_size
-      availability_zone = element(keys(local.private_subnets), 0)
-      subnet_id         = element(aws_subnet.private.*.id, 0)
+      availability_zone = element(keys(local.public_subnets), 0)
+      subnet_id         = element(aws_subnet.public.*.id, 0)
       root_block_device = {
         encrypted   = true
         volume_type = "gp2"
@@ -33,7 +33,7 @@ locals {
     worker = {
       instance_type     = var.kube_worker_instance_size
       availability_zone = element(keys(local.private_subnets), 1)
-      subnet_id         = element(aws_subnet.private.*.id, 1)
+      subnet_id         = element(aws_subnet.public.*.id, 1)
       root_block_device = {
         encrypted   = true
         volume_type = "gp2"
@@ -48,8 +48,8 @@ locals {
     }
     bgp = {
       instance_type     = var.bgp_receiver_instance_size
-      availability_zone = element(keys(local.private_subnets), 2)
-      subnet_id         = element(aws_subnet.private.*.id, 2)
+      availability_zone = element(keys(local.public_subnets), 2)
+      subnet_id         = element(aws_subnet.public.*.id, 2)
       root_block_device = {
         encrypted   = true
         volume_type = "gp2"
@@ -94,17 +94,24 @@ resource "aws_security_group" "web-sg" {
   }
 
   ingress {
-    from_port   = 0
-    to_port     = 6443
-    protocol    = "tcp"
-    cidr_blocks = [var.cidr_block]
+    from_port        = 22
+    to_port          = 22
+    protocol         = "tcp"
+    ipv6_cidr_blocks = ["::/0"]
   }
 
   ingress {
     from_port   = 0
-    to_port     = 6443
-    protocol    = "udp"
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = [var.cidr_block]
+  }
+
+  ingress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    ipv6_cidr_blocks = [aws_vpc.kube_router_main.ipv6_cidr_block]
   }
 
   ingress {
@@ -114,11 +121,25 @@ resource "aws_security_group" "web-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "icmp"
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    ipv6_cidr_blocks = ["::/0"]
   }
 
   tags = merge(
@@ -136,6 +157,7 @@ resource "aws_instance" "kube-controller" {
   availability_zone           = local.multiple_instances.controller.availability_zone
   subnet_id                   = local.multiple_instances.controller.subnet_id
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
+  ipv6_address_count          = 1
   associate_public_ip_address = true
   user_data                   = file("${path.module}/configs/cloud_init.cfg")
 
@@ -161,6 +183,7 @@ resource "aws_instance" "kube-worker" {
   availability_zone           = local.multiple_instances.worker.availability_zone
   subnet_id                   = local.multiple_instances.worker.subnet_id
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
+  ipv6_address_count          = 1
   associate_public_ip_address = true
   user_data                   = file("${path.module}/configs/cloud_init.cfg")
 
@@ -186,6 +209,7 @@ resource "aws_instance" "bgp-receiver" {
   availability_zone           = local.multiple_instances.bgp.availability_zone
   subnet_id                   = local.multiple_instances.bgp.subnet_id
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
+  ipv6_address_count          = 1
   associate_public_ip_address = true
   user_data                   = file("${path.module}/configs/cloud_init.cfg")
 
