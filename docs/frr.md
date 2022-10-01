@@ -1,5 +1,10 @@
 # Examples for Using FRR
 
+A restriction of the current FRR config is that the FRR server must be in the
+same subnet as the kube-router instances. This could likely be worked round by
+adding routes to the servers, but for now, to keep it simple, this is something
+that is required.
+
 ## Command-Line Examples
 
 For all examples below, `vtysh` can be run interactively, the below shows how to

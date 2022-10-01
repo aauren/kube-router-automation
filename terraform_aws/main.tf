@@ -32,8 +32,8 @@ locals {
     }
     worker = {
       instance_type     = var.kube_worker_instance_size
-      availability_zone = element(keys(local.private_subnets), 1)
-      subnet_id         = element(aws_subnet.public.*.id, 1)
+      availability_zone = element(keys(local.private_subnets), 0)
+      subnet_id         = element(aws_subnet.public.*.id, 0)
       root_block_device = {
         encrypted   = true
         volume_type = "gp2"
@@ -48,8 +48,8 @@ locals {
     }
     bgp = {
       instance_type     = var.bgp_receiver_instance_size
-      availability_zone = element(keys(local.public_subnets), 2)
-      subnet_id         = element(aws_subnet.public.*.id, 2)
+      availability_zone = element(keys(local.public_subnets), 0)
+      subnet_id         = element(aws_subnet.public.*.id, 0)
       root_block_device = {
         encrypted   = true
         volume_type = "gp2"
