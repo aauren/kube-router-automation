@@ -1,5 +1,11 @@
 ---
 
+- name: Install podman
+  apt:
+    pkg:
+      - podman
+    update_cache: true
+
 - name: Add libcontainers Repo Key
   apt_key:
     url:
@@ -27,6 +33,7 @@
     state: present
     filename: backports
 
+# cri-o misses a lot of functionality, and podman appears to be used to subsidize it, so we install it here
 - name: Install cri-o Components
   apt:
     pkg:
