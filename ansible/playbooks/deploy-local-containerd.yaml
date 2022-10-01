@@ -11,13 +11,15 @@
 #       kube-router project.
 #
 # Variables available to pass at runtime:
-#   - clean: optionally clean the current repo first, this is more complete but results in longer build times (default: false)
+#   - clean: optionally clean the current repo first, this is more complete but results in longer build times
+#     (default: false)
 #   - kr_repo_path: Path to kube-router git repo (default: ~/git-repos/kube-router)
 #   - go_ver: Optionally specify Go version to run with, must be in path (default: blank)
 #   - testing: Optionally enables unit tests to run (default: false)
 #
 # An invocation of Ansible that uses a variable substitution might look like:
-# ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/deploy-local-containerd.yaml --extra-vars "kr_repo_path=/home/foo/repos/kube-router,go_ver=go1.16.5"
+# ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/deploy-local-containerd.yaml \
+#   --extra-vars "kr_repo_path=/home/foo/repos/kube-router,go_ver=go1.16.5"
 #
 
 - name: Build kube-router as Container
