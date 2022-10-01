@@ -18,6 +18,17 @@
     dest: "{{ ansible_env.HOME }}/manifests/kube-router.yaml"
   when: file_manifest is defined and deploy_from_local_template is not defined
 
+- name: Gather Facts From BGP Routers
+  setup:
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ groups['bgp_routers'] }}"
+
+- name: Set BGP Peer IPs
+  set_fact:
+    bgp_peer_ips: "{{ hostvars[item].ansible_default_ipv4.address }}"
+  loop: "{{ groups['bgp_routers'] }}"
+
 - name: Render Local kube-router Manifest to Remote
   template:
     src: templates/kube-router.yaml.j2
