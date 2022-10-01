@@ -1,0 +1,69 @@
+---
+# This Ansible playbook will:
+#   - Build kube-router statically
+#   - Optionally test it
+#   - Containerize it
+#   - Stream that container into all kube-router VMs into crio
+#   - Change the kube-router deployment to use this image that contains the local container
+#
+# Note: While this playbook is called deploy-local-crio, the crio portion here only refers to the
+#       destination systems. All local build commands are still executed with Docker as that is the default of the
+#       kube-router project.
+#
+# Variables available to pass at runtime:
+#   - clean: optionally clean the current repo first, this is more complete but results in longer build times
+#     (default: false)
+#   - kr_repo_path: Path to kube-router git repo (default: ~/git-repos/kube-router)
+#   - go_ver: Optionally specify Go version to run with, must be in path (default: blank)
+#   - testing: Optionally enables unit tests to run (default: false)
+#
+# An invocation of Ansible that uses a variable substitution might look like:
+# ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/deploy-local-crio.yaml \
+#   --extra-vars "kr_repo_path=/home/foo/repos/kube-router,go_ver=go1.16.5"
+#
+
+- name: Build kube-router as Container
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vars/common_build_vars.yaml
+  tasks:
+    - name: Build & Test kube-router
+      import_role:
+        name: builder
+        tasks_from: build_kube_router
+    - name: Create kube-router Container
+      import_role:
+        name: builder
+        tasks_from: create_container
+
+- name: Stream Container to Workers
+  hosts: container_runners
+  vars_files:
+    - vars/common_build_vars.yaml
+  tasks:
+    - name: Upload Container to Workers
+      import_role:
+        name: container_runner
+        tasks_from: upload_container.yaml
+      vars:
+        cri: crio
+
+- name: Deploy New Container
+  hosts: leader
+  tasks:
+    - name: Activate New kube-router Version
+      import_role:
+        name: kube_router
+        tasks_from: deploy_custom_kube_router
+
+- name: Cleanup kube-router
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vars/common_build_vars.yaml
+  tasks:
+    - name: Build & Test kube-router
+      import_role:
+        name: builder
+        tasks_from: cleanup

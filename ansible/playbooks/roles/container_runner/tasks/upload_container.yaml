@@ -17,13 +17,19 @@
     mode: '0640'
 
 - name: Add Image to Containerd
-  become: yes
+  become: true
   shell:
     cmd: ctr --namespace k8s.io image import {{ ansible_env.HOME }}/kube-router.tar
   when: cri == "containerd"
 
+- name: Add Image to Cri-o
+  become: true
+  shell:
+    cmd: podman import {{ ansible_env.HOME }}/kube-router.tar
+  when: cri == "crio"
+
 - name: Add Image to Docker
-  become: yes
+  become: true
   shell:
     cmd: docker load -i {{ ansible_env.HOME }}/kube-router.tar
   when: cri == "docker"
