@@ -1,0 +1,51 @@
+---
+
+- name: Add libcontainers Repo Key
+  apt_key:
+    url:
+      "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ ubuntu_version }}/Release.key"
+    state: present
+
+- name: Add libcontainers-crio Repo Key
+  apt_key:
+    url:
+      "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/\
+       {{ crio_version }}/{{ ubuntu_version }}/Release.key"
+    state: present
+
+- name: Add libcontainers Repository
+  apt_repository:
+    repo: "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ ubuntu_version }}/ /"
+    state: present
+    filename: backports
+
+- name: Add libcontainers-crio Repository
+  apt_repository:
+    repo:
+      "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/\
+       {{ crio_version }}/{{ ubuntu_version }}/ /"
+    state: present
+    filename: backports
+
+- name: Install cri-o Components
+  apt:
+    pkg:
+      - cri-o
+      - cri-o-runc
+      - containernetworking-plugins
+    update_cache: true
+
+- name: Create cri-o /var/lib Dir
+  file:
+    path: /var/lib/crio
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Start / Enable containerd Service
+  systemd:
+    name: crio
+    enabled: true
+    state: started
+    daemon_reload: true

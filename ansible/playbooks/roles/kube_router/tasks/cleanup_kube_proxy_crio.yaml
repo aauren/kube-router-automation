@@ -1,0 +1,13 @@
+---
+
+- name: Get Kubernetes Version
+  shell: kubelet --version | awk '{print $2}'
+  register: kubernetes_version
+
+- name: Pull kube-proxy Image for Cleanup
+  command: crictl pull k8s.gcr.io/kube-proxy-amd64:{{ kubernetes_version.stdout }}
+
+- name: Cleanup kube-proxy Rules
+  command: |
+    crictl run --rm --privileged --net-host --mount type=bind,src=/lib/modules,dst=/lib/modules,options=rbind:ro
+    k8s.gcr.io/kube-proxy-amd64:{{ kubernetes_version.stdout }} kube-proxy-cleanup kube-proxy --cleanup

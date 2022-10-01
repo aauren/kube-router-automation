@@ -1,0 +1,3 @@
+---
+
+cri_socket: "/run/crio/crio.sock"

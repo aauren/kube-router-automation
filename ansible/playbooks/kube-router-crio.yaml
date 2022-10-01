@@ -1,6 +1,6 @@
 ---
 # This Ansible playbook will:
-#   - Setup containerd as the host's runtime
+#   - Setup cri-o as the host's runtime
 #   - Install Kubernetes tooling
 #   - Use kubeadm to create a cluster on the node (identified in inventory as "leader")
 #   - Will join any workers to the cluster (identified in inventory as "workers")
@@ -17,9 +17,9 @@
 #     (default: true)
 #
 # Tags in Playbook:
-#   - setup: Basic setup tasks for host config, containerd, and frr
+#   - setup: Basic setup tasks for host config, cri-o, and frr
 #   - baseline: Configs specific to Linux like hostname setting and sysctl application
-#   - containerd: Installs / Configures / Runs containerd
+#   - crio: Installs / Configures / Runs cri-o
 #   - kubernetes: Installs / Configures kubernetes
 #   - cluster: Governs the items related to kubeadm that make the cluster and allow workers to join it
 #   - leader: Creates the Kubernetes control plane and initializing the cluster using kubeadm
@@ -31,15 +31,15 @@
 #   - manifests: Deploys manifests from the top level manifests directory
 #
 # An invocation of Ansible that uses a variable substitution might look like:
-# ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/kube-router-containerd.yaml --extra-vars \
-#   "file_manifest=/home/foo/kube-router.yaml"
+# ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/kube-router-crio.yaml \
+#   --extra-vars "file_manifest=/home/foo/kube-router.yaml"
 #
 # An invocation that skips specific tags might look like:
-# ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/kube-router-containerd.yaml --skip-tags \
-#   setup,leader
+# ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/kube-router-crio.yaml \
+#   --skip-tags setup,leader
 #
 # An invocation that only runs specific tags might look like:
-# ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/kube-router-containerd.yaml --tags kube-router
+# ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/kube-router-crio.yaml --tags kube-router
 
 - name: Ensure Basic Host Config
   hosts: all
@@ -59,12 +59,13 @@
   tags:
     - setup
   tasks:
-    - name: Setup & Run Containerd
+    - name: Setup & Run cri-o
       tags:
-        - containerd
+        - crio
       import_role:
         name: container_runner
-        tasks_from: setup_containerd
+        tasks_from: setup_crio
+        vars_from: crio
     - name: Setup Kubernetes
       tags:
         - kubernetes
@@ -85,7 +86,7 @@
       import_role:
         name: kubernetes
         tasks_from: initialize_cluster
-        vars_from: containerd
+        vars_from: crio
     - name: Setup User Kube Config
       tags:
         - user_config
@@ -105,7 +106,7 @@
       import_role:
         name: kubernetes
         tasks_from: join_cluster
-        vars_from: containerd
+        vars_from: crio
     - name: Setup User Kube Config
       tags:
         - user_config
@@ -126,25 +127,25 @@
         name: kube_router
         tasks_from: deploy_kube_router
       vars:
-        cri: containerd
+        cri: crio
         bgp_router_enabled: true
         deploy_from_local_template: true
         kube_proxy_replacement: true
 
-- name: Cleanup kube-proxy
-  hosts: container_runners
-  become: true
-  tasks:
-    - name: Cleanup kube-proxy
-      tags:
-        - kube-router
-        - cleanup
-      import_role:
-        name: kube_router
-        tasks_from: cleanup_kube_proxy_containerd
-      when: kube_proxy_replacement == true
-      vars:
-        kube_proxy_replacement: true
+# - name: Cleanup kube-proxy
+#  hosts: container_runners
+#  become: true
+#  tasks:
+#    - name: Cleanup kube-proxy
+#      tags:
+#        - kube-router
+#        - cleanup
+#      import_role:
+#        name: kube_router
+#        tasks_from: cleanup_kube_proxy_crio
+#      when: kube_proxy_replacement == true
+#      vars:
+#        kube_proxy_replacement: true
 
 - name: Deploy BGP Route Server
   hosts: bgp_routers

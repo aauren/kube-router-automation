@@ -63,6 +63,8 @@ spec:
         {% endif -%}
         {%- if cri == "containerd" -%}
         - --runtime-endpoint=unix:///run/containerd/containerd.sock
+        {%- elif cri == "crio" -%}
+        - --runtime-endpoint=unix:///run/crio/crio.sock
         {% endif -%}
         - --cluster-asn={{ bgp_asn }}
         - --service-external-ip-range={{ external_ip_range }}
@@ -102,6 +104,10 @@ spec:
         {%- if cri == "containerd" %}
         - name: containerd-sock
           mountPath: /run/containerd/containerd.sock
+          readOnly: true
+        {%- elif cri == "crio" %}
+        - name: crio-sock
+          mountPath: /run/crio/crio.sock
           readOnly: true
         {%- endif %}
       initContainers:
@@ -159,6 +165,10 @@ spec:
       - name: containerd-sock
         hostPath:
           path: /run/containerd/containerd.sock
+      {%- elif cri == "crio" %}
+      - name: crio-sock
+        hostPath:
+          path: /run/crio/crio.sock
       {%- endif %}
 ---
 apiVersion: v1
