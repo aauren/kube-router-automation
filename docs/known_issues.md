@@ -31,3 +31,12 @@ which causes kube-apiserver and most of Kubernetes to fail.
 
 For now, users should use Ubuntu 20.04 if they want to use containerd, otherwise
 they should use cri-o or docker which both seem to work fine.
+
+## Number of VMs / Instances
+
+Right now the Ansible playbooks and Terraform variables aren't very well
+constructed for dynamically adding more Kubernetes / BGP hosts. Probably a
+significant number of changes would be necessary in order to make this work
+properly. So at this point, users should consider the number of VMs / Instances
+to be set at the repo defaults unless they really want to dive into it and
+abstract the terraform / playbooks.
