@@ -50,7 +50,7 @@
     owner: root
     group: root
 
-- name: Start / Enable containerd Service
+- name: Start / Enable cri-o Service
   systemd:
     name: crio
     enabled: true
