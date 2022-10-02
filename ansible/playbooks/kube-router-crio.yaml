@@ -94,6 +94,18 @@
         name: kubernetes
         tasks_from: copy_kubeconfig
 
+- name: Deploy Cloud Provider
+  hosts: leader
+  tasks:
+    - name: Setup AWS Provider
+      tags:
+        - aws
+        - leader
+      import_role:
+        name: aws
+        tasks_from: install_provider
+      when: ansible_system_vendor == "Amazon EC2"
+
 - name: Join Cluster with Remaining Nodes
   hosts: workers
   become: true

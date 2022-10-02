@@ -1,0 +1,44 @@
+---
+
+- name: Create Manifest Dir
+  file:
+    path: "{{ ansible_env.HOME }}/manifests"
+    state: directory
+    mode: '0750'
+
+- name: Get AWS Provider Service Account Manifest from Upstream
+  get_url:
+    url: "{{ service_acct_manifest }}"
+    dest: "{{ ansible_env.HOME }}/manifests/aws_provider_service_acct.yaml"
+
+- name: Get AWS Provider Cluster Role Manifest from Upstream
+  get_url:
+    url: "{{ cluster_role_manifest }}"
+    dest: "{{ ansible_env.HOME }}/manifests/aws_provider_cluster_role.yaml"
+
+- name: Ensure AWS Provider Cluster Role Starts with Tripple Hyphen
+  lineinfile:
+    line: "---"
+    insertbefore: "^apiVersion"
+    path: "{{ ansible_env.HOME }}/manifests/aws_provider_cluster_role.yaml"
+
+- name: Get AWS API Server Binding Manifest from Upstream
+  get_url:
+    url: "{{ api_binding_manifest }}"
+    dest: "{{ ansible_env.HOME }}/manifests/aws_provider_api_binding.yaml"
+
+- name: Get AWS Cluster Role Binding Manifest from Upstream
+  get_url:
+    url: "{{ cluster_binding_manifest }}"
+    dest: "{{ ansible_env.HOME }}/manifests/aws_provider_cluster_binding.yaml"
+
+- name: Get AWS Manager Manifest from Upstream
+  get_url:
+    url: "{{ manager_manifest }}"
+    dest: "{{ ansible_env.HOME }}/manifests/aws_provider_manager.yaml"
+
+- name: Concatenate Manifests
+  shell: "cat {{ ansible_env.HOME }}/manifests/aws_provider_*.yaml > {{ ansible_env.HOME }}/manifests/aws_all.yaml"
+
+- name: Deploy AWS Provider Service Account Manifest
+  command: kubectl apply -f {{ ansible_env.HOME }}/manifests/aws_all.yaml
