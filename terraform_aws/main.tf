@@ -15,9 +15,10 @@ locals {
 
   multiple_instances = {
     controller = {
-      instance_type     = var.kube_worker_instance_size
-      availability_zone = element(keys(local.public_subnets), 0)
-      subnet_id         = element(aws_subnet.public.*.id, 0)
+      instance_type        = var.kube_worker_instance_size
+      availability_zone    = element(keys(local.public_subnets), 0)
+      subnet_id            = element(aws_subnet.public.*.id, 0)
+      iam_instance_profile = aws_iam_instance_profile.control-plane-profile.id
       root_block_device = {
         encrypted   = true
         volume_type = "gp2"
@@ -31,9 +32,10 @@ locals {
       }
     }
     worker = {
-      instance_type     = var.kube_worker_instance_size
-      availability_zone = element(keys(local.private_subnets), 0)
-      subnet_id         = element(aws_subnet.public.*.id, 0)
+      instance_type        = var.kube_worker_instance_size
+      availability_zone    = element(keys(local.private_subnets), 0)
+      subnet_id            = element(aws_subnet.public.*.id, 0)
+      iam_instance_profile = aws_iam_instance_profile.worker-profile.id
       root_block_device = {
         encrypted   = true
         volume_type = "gp2"
@@ -47,9 +49,10 @@ locals {
       }
     }
     bgp = {
-      instance_type     = var.bgp_receiver_instance_size
-      availability_zone = element(keys(local.public_subnets), 0)
-      subnet_id         = element(aws_subnet.public.*.id, 0)
+      instance_type        = var.bgp_receiver_instance_size
+      availability_zone    = element(keys(local.public_subnets), 0)
+      subnet_id            = element(aws_subnet.public.*.id, 0)
+      iam_instance_profile = aws_iam_instance_profile.worker-profile.id
       root_block_device = {
         encrypted   = true
         volume_type = "gp2"
@@ -149,13 +152,17 @@ resource "aws_security_group" "web-sg" {
 }
 
 resource "aws_instance" "kube-controller" {
-  depends_on = [aws_internet_gateway.gw]
+  depends_on = [
+    aws_internet_gateway.gw,
+    aws_iam_instance_profile.control-plane-profile
+  ]
 
   ami                         = data.aws_ami.amazon_linux.id
   instance_type               = local.multiple_instances.controller.instance_type
   key_name                    = var.aws_key_name
   availability_zone           = local.multiple_instances.controller.availability_zone
   subnet_id                   = local.multiple_instances.controller.subnet_id
+  iam_instance_profile        = local.multiple_instances.controller.iam_instance_profile
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
   ipv6_address_count          = 1
   associate_public_ip_address = true
@@ -175,13 +182,17 @@ resource "aws_instance" "kube-controller" {
 }
 
 resource "aws_instance" "kube-worker" {
-  depends_on = [aws_internet_gateway.gw]
+  depends_on = [
+    aws_internet_gateway.gw,
+    aws_iam_instance_profile.worker-profile
+  ]
 
   ami                         = data.aws_ami.amazon_linux.id
   instance_type               = local.multiple_instances.worker.instance_type
   key_name                    = var.aws_key_name
   availability_zone           = local.multiple_instances.worker.availability_zone
   subnet_id                   = local.multiple_instances.worker.subnet_id
+  iam_instance_profile        = local.multiple_instances.worker.iam_instance_profile
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
   ipv6_address_count          = 1
   associate_public_ip_address = true
@@ -201,13 +212,17 @@ resource "aws_instance" "kube-worker" {
 }
 
 resource "aws_instance" "bgp-receiver" {
-  depends_on = [aws_internet_gateway.gw]
+  depends_on = [
+    aws_internet_gateway.gw,
+    aws_iam_instance_profile.worker-profile
+  ]
 
   ami                         = data.aws_ami.amazon_linux.id
   instance_type               = local.multiple_instances.bgp.instance_type
   key_name                    = var.aws_key_name
   availability_zone           = local.multiple_instances.bgp.availability_zone
   subnet_id                   = local.multiple_instances.bgp.subnet_id
+  iam_instance_profile        = local.multiple_instances.bgp.iam_instance_profile
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
   ipv6_address_count          = 1
   associate_public_ip_address = true
