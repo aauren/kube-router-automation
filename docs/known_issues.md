@@ -32,6 +32,11 @@ which causes kube-apiserver and most of Kubernetes to fail.
 For now, users should use Ubuntu 20.04 if they want to use containerd, otherwise
 they should use cri-o or docker which both seem to work fine.
 
+Some links I found on this issue:
+* https://github.com/containerd/containerd/issues/4581
+* https://github.com/containerd/containerd/issues/6704
+* https://github.com/kubernetes/kubernetes/issues/97555
+
 ## Number of VMs / Instances
 
 Right now the Ansible playbooks and Terraform variables aren't very well
