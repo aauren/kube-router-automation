@@ -167,6 +167,7 @@ resource "aws_instance" "kube-controller" {
   ipv6_address_count          = 1
   associate_public_ip_address = true
   user_data                   = file("${path.module}/configs/cloud_init.cfg")
+  source_dest_check           = false
 
   root_block_device {
     encrypted   = local.multiple_instances.controller.root_block_device.encrypted
@@ -197,6 +198,7 @@ resource "aws_instance" "kube-worker" {
   ipv6_address_count          = 1
   associate_public_ip_address = true
   user_data                   = file("${path.module}/configs/cloud_init.cfg")
+  source_dest_check           = false
 
   root_block_device {
     encrypted   = local.multiple_instances.worker.root_block_device.encrypted
@@ -227,6 +229,7 @@ resource "aws_instance" "bgp-receiver" {
   ipv6_address_count          = 1
   associate_public_ip_address = true
   user_data                   = file("${path.module}/configs/cloud_init.cfg")
+  source_dest_check           = false
 
   root_block_device {
     encrypted   = local.multiple_instances.bgp.root_block_device.encrypted
