@@ -115,15 +115,15 @@ resource "aws_security_group" "web-sg" {
   }
 
   ingress {
-    from_port   = 0
-    to_port     = 0
+    from_port   = "-1"
+    to_port     = "-1"
     protocol    = "icmp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    from_port        = 0
-    to_port          = 0
+    from_port        = "-1"
+    to_port          = "-1"
     protocol         = "icmp"
     ipv6_cidr_blocks = ["::/0"]
   }
