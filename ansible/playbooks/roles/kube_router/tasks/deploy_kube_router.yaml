@@ -18,6 +18,8 @@
     dest: "{{ ansible_env.HOME }}/manifests/kube-router.yaml"
   when: file_manifest is defined and deploy_from_local_template is not defined
 
+# This is needed because by default this is a new play and we don't have facts for anything other than the kubernetes
+# leader. This gathers the facts from our BGP routers so that we have access to their default IPv4 address below.
 - name: Gather Facts From BGP Routers
   setup:
   delegate_to: "{{ item }}"
