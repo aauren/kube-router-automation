@@ -6,26 +6,40 @@ kubernetesVersion: {{ kubernetes_version.stdout }}
 #  extraArgs:
 #    feature-gates: NetworkPolicyEndPort=true
 networking:
-  podSubnet: "{{ pod_network | default("10.242.0.0/16", true) }}"
+{% if ipv6_enabled is defined %}
+  podSubnet: {{ pod_network.ipv4 | default("10.242.0.0/16", true) }},{{ pod_network.ipv6 | default("2001:db8:42:0::/56", true) }}
+  serviceSubnet: {{ service_network.ipv4 | default("10.96.0.0/16", true) }},{{ service_network.ipv6 | default("2001:db8:42:1::/112", true) }}
+{% else %}
+  podSubnet: {{ pod_network.ipv4 | default("10.242.0.0/16", true) }}
+{% endif %}
 {% if ansible_system_vendor == "Amazon EC2" %}
-#controllerManager:
-#  extraArgs:
-#    cloud-provider: external
-#    external-cloud-volume-plugin: aws
-#apiServer:
-#  extraArgs:
-#    cloud-provider: external
+controllerManager:
+  extraArgs:
+    cloud-provider: external
+    external-cloud-volume-plugin: aws
+apiServer:
+  extraArgs:
+    cloud-provider: external
 {% endif %}
 ---
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: {{ ansible_default_ipv4.address }}
+  bindPort: 6443
 nodeRegistration:
   criSocket: {{ cri_socket | default("/var/run/dockershim.sock", true) }}
   imagePullPolicy: IfNotPresent
   taints: null
+  kubeletExtraArgs:
 {% if ansible_system_vendor == "Amazon EC2" %}
-#  kubeletExtraArgs:
-#    cloud-provider: external
+    # Supposedly node-ip isn't supported when using a cloud provider
+    # cloud-provider: external
+{% endif %}
+{% if ipv6_enabled is defined %}
+    node-ip: {{ ansible_default_ipv4.address }},{{ ansible_default_ipv6.address }}
+{% else %}
+    node-ip: {{ ansible_default_ipv4.address }}
 {% endif %}
 # To see more options that could go here, see: https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#config-file
 # You can also see the default values with: kubeadm config print init-defaults

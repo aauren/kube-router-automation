@@ -67,7 +67,12 @@ spec:
         - --runtime-endpoint=unix:///run/crio/crio.sock
         {% endif -%}
         - --cluster-asn={{ bgp_asn }}
-        - --service-external-ip-range={{ external_ip_range }}
+        - --service-cluster-ip-range={{ service_network.ipv4 }}
+        {%- if ipv6_enabled is defined %}
+#        - --enable-ipv6=true
+#        - --service-cluster-ip-range={{ service_network.ipv6 }}
+        {% endif -%}
+        - --service-external-ip-range={{ external_ip_range.ipv4 }}
         - --advertise-external-ip=true
         - -v=1
         env:

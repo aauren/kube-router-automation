@@ -90,17 +90,23 @@ exit-address-family
 ! Setup IP Prefix lists
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Allow external IP range and allows /32 addresses to be specified
-ip prefix-list pl-allowed-adv seq 5 permit {{ external_ip_range }} le 32
+ip prefix-list pl-allowed-adv seq 5 permit {{ external_ip_range.ipv4 }} le 32
 # Allow pod IP addresses and allows /24 addresses to be specified (which is the default from kube-controller-manager)
-ip prefix-list pl-allowed-adv seq 10 permit {{ pod_network }} le 24
+ip prefix-list pl-allowed-adv seq 10 permit {{ pod_network.ipv4 }} le 24
 # Allow Cluster IP Addresses (from Kubernetes default range) and allows /32 addresses to be specified
 # This is disabled for now, but in order for this to work, kube-router would need to be configured with: --advertise-cluster-ip
 # ip prefix-list pl-allowed-adv seq 15 permit 10.96.0.0/12 le 32
 # Deny all other BGP imports
 ip prefix-list pl-allowed-adv seq 50 deny any
 !
-# Not exactly sure how to configure this just yet, but this is a rough attempt for IPv6 testing
-ipv6 prefix-lists pl-allowed-v6-adv seq  5 permit 2001:0DB8:0000::/48 le 64
+{%- if ipv6_enabled %}
+# Allow external IP range and allows /64 addresses to be specified
+ipv6 prefix-lists pl-allowed-v6-adv seq  5 permit {{ external_ip_range.ipv6 }} le 64
+# Allow pod IP addresses and allows /64 addresses to be specified
+ipv6 prefix-lists pl-allowed-v6-adv seq  10 permit {{ pod_network.ipv6 }} le 64
+{%- endif %}
+# Deny all other BGP imports
+ipv6 prefix-list pl-allowed-v6-adv seq 50 deny any
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! Setup Route Maps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -1,5 +1,19 @@
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: JoinConfiguration
+discovery:
+  bootstrapToken:
+    apiServerEndpoint: {{ api_server }}
+    token: "{{ token }}"
+    caCertHashes:
+    - "{{ ca_hash }}"
 nodeRegistration:
   kubeletExtraArgs:
-    cloud-provider: external
+{% if ansible_system_vendor == "Amazon EC2" %}
+    # Supposedly node-ip isn't supported when using a cloud provider
+    # cloud-provider: external
+{% endif %}
+{% if ipv6_enabled is defined %}
+    node-ip: "{{ ansible_default_ipv4.address }},{{ ansible_default_ipv6.address }}"
+{% else %}
+    node-ip: "{{ ansible_default_ipv4.address }}"
+{% endif %}

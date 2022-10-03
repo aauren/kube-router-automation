@@ -1,3 +1,11 @@
-external_ip_range: 10.243.0.0/24
+---
+external_ip_range:
+  ipv4: 10.243.0.0/24
+  ipv6: 2001:db8:42:2::/56
 bgp_asn: 4200000001
-pod_network: 10.242.0.0/16
+pod_network:
+  ipv4: 10.242.0.0/16
+  ipv6: 2001:db8:42:0::/56
+service_network:
+  ipv4: 10.96.0.0/16
+  ipv6: 2001:db8:42:1::/112

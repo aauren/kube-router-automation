@@ -17,7 +17,39 @@
   loop: "{{ groups['leader'] }}"
   when: kube_status.rc != 0
 
+- name: Create kubeadm Config Dir
+  file:
+    path: /etc/kubeadm
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+# here we have to parse the join command so that we can form a kubeadm JoinConfiguration. It looks like:
+# kubeadm join 10.0.0.1:6443 --token numbersletters.numbersletters --discovery-token-ca-cert-hash
+# sha256:longhexidecimalhashhere
+- name: Set Join Command as Fact
+  set_fact:
+    join_command: "{{ join_token['results'][0]['stdout'] }}"
+
+- name: Parse API Server as Fact
+  set_fact:
+    api_server: "{{ join_command.split(' ')[2] }}"
+
+- name: Parse token as Fact
+  set_fact:
+    token: "{{ join_command.split(' ')[4] }}"
+
+- name: Parse CA Hash as Fact
+  set_fact:
+    ca_hash: "{{ join_command.split(' ')[6] }}"
+
+- name: Template kubeadm Node JoinConfiguration
+  template:
+    src: templates/kubeadm-config-node.yaml.j2
+    dest: /etc/kubeadm/kubeadmjoinconfig.yaml
+
 - name: Join Cluster with Token
   # Because we used a loop command (even over just one host) we have to parse results to get to stdout
-  command: "{{ join_token['results'][0]['stdout'] }}"
+  command: "kubeadm join --config /etc/kubeadm/kubeadmjoinconfig.yaml"
   when: kube_status.rc != 0
