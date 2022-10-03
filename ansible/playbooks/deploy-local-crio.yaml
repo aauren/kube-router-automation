@@ -56,6 +56,8 @@
       import_role:
         name: kube_router
         tasks_from: deploy_custom_kube_router
+      vars:
+        cri: crio
 
 - name: Cleanup kube-router
   hosts: localhost
