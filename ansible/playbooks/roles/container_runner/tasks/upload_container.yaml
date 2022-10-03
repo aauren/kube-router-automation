@@ -25,7 +25,7 @@
 - name: Add Image to Cri-o
   become: true
   shell:
-    cmd: podman import {{ ansible_env.HOME }}/kube-router.tar
+    cmd: podman load -i {{ ansible_env.HOME }}/kube-router.tar
   when: cri == "crio"
 
 - name: Add Image to Docker
