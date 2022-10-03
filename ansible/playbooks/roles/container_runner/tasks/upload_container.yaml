@@ -2,7 +2,7 @@
 
 - name: Set Git Directory Default
   set_fact:
-    repo_path: "{{ ansible_env.HOME }}/{{ kr_repo_path }}"
+    repo_path: "{{ lookup('env', 'HOME') }}/{{ kr_repo_path }}"
   when: kr_repo_path.find("home") == -1
 
 - name: Set Git Directory Custom
