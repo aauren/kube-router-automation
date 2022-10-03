@@ -177,6 +177,7 @@ resource "aws_instance" "kube-controller" {
   }
   tags = merge(
     { "Name" = var.name },
+    { "kubernetes.io/cluster/${var.name}" = "owned" },
     var.tags,
     local.multiple_instances.controller.tags
   )
@@ -208,6 +209,7 @@ resource "aws_instance" "kube-worker" {
   }
   tags = merge(
     { "Name" = var.name },
+    { "kubernetes.io/cluster/${var.name}" = "owned" },
     var.tags,
     local.multiple_instances.worker.tags
   )
