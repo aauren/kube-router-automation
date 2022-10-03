@@ -25,6 +25,6 @@
 - name: Build kube-router
   shell:
     chdir: "{{ repo_path }}"
-    cmd: |
+    cmd: >
       CGO_ENABLED=0 {{ go_ver | default("go", true) }} build -gcflags="all=-N -l" -o
       kube-router cmd/kube-router/kube-router.go
