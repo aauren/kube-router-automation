@@ -3,6 +3,13 @@
 - name: Get Container Name as Fact
   set_fact:
     container_name: "{{ hostvars['localhost']['unique_container_name'] }}"
+  when: cri is not defined or cri != "crio"
+
+# podman / cri-o prepend the localhost/ bit to the imported container
+- name: Get Container Name as Fact
+  set_fact:
+    container_name: "localhost/{{ hostvars['localhost']['unique_container_name'] }}"
+  when: cri == "crio"
 
 - name: Render Local Change Image Patch
   template:
