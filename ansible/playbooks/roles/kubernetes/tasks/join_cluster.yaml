@@ -31,23 +31,28 @@
 - name: Set Join Command as Fact
   set_fact:
     join_command: "{{ join_token['results'][0]['stdout'] }}"
+  when: kube_status.rc != 0
 
 - name: Parse API Server as Fact
   set_fact:
     api_server: "{{ join_command.split(' ')[2] }}"
+  when: kube_status.rc != 0
 
 - name: Parse token as Fact
   set_fact:
     token: "{{ join_command.split(' ')[4] }}"
+  when: kube_status.rc != 0
 
 - name: Parse CA Hash as Fact
   set_fact:
     ca_hash: "{{ join_command.split(' ')[6] }}"
+  when: kube_status.rc != 0
 
 - name: Template kubeadm Node JoinConfiguration
   template:
     src: templates/kubeadm-config-node.yaml.j2
     dest: /etc/kubeadm/kubeadmjoinconfig.yaml
+  when: kube_status.rc != 0
 
 - name: Join Cluster with Token
   # Because we used a loop command (even over just one host) we have to parse results to get to stdout
