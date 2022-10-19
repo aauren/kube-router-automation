@@ -5,11 +5,12 @@
     name: syslog
     shell: /usr/sbin/nologin
     home: /nonexistent
+  ignore_errors: true
 
 - name: Install FRR
   apt:
     name: frr
-    update_cache: yes
+    update_cache: true
 
 - name: Enable BGP Daemon in FRR
   lineinfile:
@@ -27,6 +28,6 @@
 - name: Restart / Enable FRR Service
   systemd:
     name: frr
-    enabled: yes
+    enabled: true
     state: restarted
-    daemon_reload: yes
+    daemon_reload: true
