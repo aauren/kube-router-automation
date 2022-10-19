@@ -173,6 +173,8 @@
       import_role:
         name: bgp_router
         tasks_from: deploy_route_server
+      vars:
+        ipv6_enabled: false
 
 - name: Deploy Misc Manifests
   hosts: leader
