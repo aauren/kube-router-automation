@@ -6,7 +6,7 @@ variable "image_cache_dir" {
 
 variable "ubuntu_image_url" {
   type    = string
-  default = "https://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64.img"
+  default = "https://cloud-images.ubuntu.com/releases/jammy/release/ubuntu-22.04-server-cloudimg-amd64.img"
 }
 
 variable "disk_size" {
