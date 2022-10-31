@@ -24,7 +24,7 @@ resource "libvirt_pool" "kube-router-storage" {
   # and bandwidth. Also, this provider isn't capable of resizing the downloaded images, so the disks end up really
   # small. However, QEMU can expand the image to anything we want pretty easily.
   provisioner "local-exec" {
-    command     = "${path.module}/scripts/cache_ubuntu_img.sh"
+    command     = "${path.module}/../scripts/cache_ubuntu_img.sh"
     environment = {
       IMG_CACHE_DIR  = var.image_cache_dir
       UBUNTU_IMG_URL = var.ubuntu_image_url
