@@ -1,9 +1,19 @@
 ---
 
-- name: Install containerd
+- name: Add Docker GPG apt Key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker Repository
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu focal stable
+    state: present
+
+- name: Install containerd.io
   apt:
-    name: containerd
-    update_cache: yes
+    name: containerd.io
+    update_cache: true
 
 - name: Create containerd Config Dir
   file:
@@ -39,6 +49,6 @@
 - name: Start / Enable containerd Service
   systemd:
     name: containerd
-    enabled: yes
-    state: started
-    daemon_reload: yes
+    enabled: true
+    state: restarted
+    daemon_reload: true
