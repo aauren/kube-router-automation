@@ -9,7 +9,7 @@
 - name: Get Container Name as Fact
   set_fact:
     container_name: "localhost/{{ hostvars['localhost']['unique_container_name'] }}"
-  when: cri == "crio"
+  when: cri is defined and cri == "crio"
 
 - name: Render Local Change Image Patch
   template:
