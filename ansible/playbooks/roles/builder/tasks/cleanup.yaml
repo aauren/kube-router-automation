@@ -14,3 +14,7 @@
   file:
     path: "{{ repo_path }}/kube-router.tar"
     state: absent
+
+- name: Cleanup Container Now That It's Been Exported
+  shell:
+    cmd: docker rmi {{ container_name }}
