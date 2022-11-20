@@ -37,9 +37,9 @@ router bgp {{ bgp_asn }}
   neighbor kubepeers remote-as {{ bgp_asn }}
 !
   # Add peers
-  {% for peer in bgp_peers %}
-{{ "neighbor " + hostvars[peer].ansible_default_ipv4.address + " peer-group kubepeers" | indent(2, true) }}
-  {% endfor %}
+{% for peer in bgp_peers %}
+  {{ "neighbor " + hostvars[peer].ansible_default_ipv4.address + " peer-group kubepeers" }}
+{% endfor %}
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! Configure IPv4 family
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -99,12 +99,12 @@ ip prefix-list pl-allowed-adv seq 10 permit {{ pod_network.ipv4 }} le 24
 # Deny all other BGP imports
 ip prefix-list pl-allowed-adv seq 50 deny any
 !
-{%- if ipv6_enabled %}
+{% if ipv6_enabled %}
 # Allow external IP range and allows /64 addresses to be specified
 ipv6 prefix-lists pl-allowed-v6-adv seq  5 permit {{ external_ip_range.ipv6 }} le 64
 # Allow pod IP addresses and allows /64 addresses to be specified
 ipv6 prefix-lists pl-allowed-v6-adv seq  10 permit {{ pod_network.ipv6 }} le 64
-{%- endif %}
+{% endif %}
 # Deny all other BGP imports
 ipv6 prefix-list pl-allowed-v6-adv seq 50 deny any
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
