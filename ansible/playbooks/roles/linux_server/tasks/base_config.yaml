@@ -16,4 +16,5 @@
       - dnsutils
       - tcpdump
       - iperf3
+      - ndisc6
     update_cache: true
