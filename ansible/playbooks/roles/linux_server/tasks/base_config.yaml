@@ -8,3 +8,12 @@
 # We have some pending sysctl changes that need to be enacted on all systems
 - name: Update sysctl
   command: sysctl --system
+
+- name: Install Standard Network Utils
+  apt:
+    name:
+      - iputils-ping
+      - dnsutils
+      - tcpdump
+      - iperf3
+    update_cache: true
