@@ -17,7 +17,7 @@ locals {
     controller = {
       instance_type        = var.kube_worker_instance_size
       availability_zone    = element(keys(local.public_subnets), 0)
-      subnet_id            = element(aws_subnet.public.*.id, 0)
+      subnet_id            = element(aws_subnet.public[*].id, 0)
       iam_instance_profile = aws_iam_instance_profile.control-plane-profile.id
       root_block_device = {
         encrypted   = true
@@ -34,7 +34,7 @@ locals {
     worker = {
       instance_type        = var.kube_worker_instance_size
       availability_zone    = element(keys(local.private_subnets), 0)
-      subnet_id            = element(aws_subnet.public.*.id, 0)
+      subnet_id            = element(aws_subnet.public[*].id, 0)
       iam_instance_profile = aws_iam_instance_profile.worker-profile.id
       root_block_device = {
         encrypted   = true
@@ -51,7 +51,7 @@ locals {
     bgp = {
       instance_type        = var.bgp_receiver_instance_size
       availability_zone    = element(keys(local.public_subnets), 0)
-      subnet_id            = element(aws_subnet.public.*.id, 0)
+      subnet_id            = element(aws_subnet.public[*].id, 0)
       iam_instance_profile = aws_iam_instance_profile.worker-profile.id
       root_block_device = {
         encrypted   = true
