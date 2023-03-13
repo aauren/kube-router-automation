@@ -49,7 +49,11 @@ spec:
       serviceAccount: kube-router
       containers:
       - name: kube-router
+        {%- if kube_router_version is defined %}
+        image: docker.io/cloudnativelabs/kube-router:{{ kube_router_version }}
+        {%- else -%}
         image: docker.io/cloudnativelabs/kube-router
+        {% endif %}
         imagePullPolicy: Always
         args:
         - --run-router=true
