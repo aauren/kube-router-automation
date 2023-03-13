@@ -73,9 +73,9 @@ spec:
         - --cluster-asn={{ bgp_asn }}
         - --service-cluster-ip-range={{ service_network.ipv4 }}
         {%- if ipv6_enabled is defined %}
-#        - --enable-ipv6=true
-#        - --service-cluster-ip-range={{ service_network.ipv6 }}
-#        - --service-external-ip-range={{ external_ip_range.ipv6 }}
+        - --enable-ipv6=true
+        - --service-cluster-ip-range={{ service_network.ipv6 }}
+        - --service-external-ip-range={{ external_ip_range.ipv6 }}
         {% endif %}
         - --service-external-ip-range={{ external_ip_range.ipv4 }}
         - --advertise-external-ip=true
