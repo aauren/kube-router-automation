@@ -95,7 +95,7 @@ ip prefix-list pl-allowed-adv seq 5 permit {{ external_ip_range.ipv4 }} le 32
 ip prefix-list pl-allowed-adv seq 10 permit {{ pod_network.ipv4 }} le 24
 # Allow Cluster IP Addresses (from Kubernetes default range) and allows /32 addresses to be specified
 # This is disabled for now, but in order for this to work, kube-router would need to be configured with: --advertise-cluster-ip
-# ip prefix-list pl-allowed-adv seq 15 permit {{ service_network.ipv4 }} le 32
+ip prefix-list pl-allowed-adv seq 15 permit {{ service_network.ipv4 }} le 32
 # Deny all other BGP imports
 ip prefix-list pl-allowed-adv seq 50 deny any
 !
@@ -106,7 +106,7 @@ ipv6 prefix-list pl-allowed-v6-adv seq  5 permit {{ external_ip_range.ipv6 }} le
 ipv6 prefix-list pl-allowed-v6-adv seq  10 permit {{ pod_network.ipv6 }} le 64
 # Allow cluster IP range and allows /128 addresses to be specified
 # This is disabled for now, but in order for this to work, kube-router would need to be configured with: --advertise-cluster-ip
-#ipv6 prefix-list pl-allowed-v6-adv seq  15 permit {{ service_network.ipv6 }} le 128
+ipv6 prefix-list pl-allowed-v6-adv seq  15 permit {{ service_network.ipv6 }} le 128
 {% endif %}
 # Deny all other BGP imports
 ipv6 prefix-list pl-allowed-v6-adv seq 50 deny any
