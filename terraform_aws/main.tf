@@ -28,6 +28,7 @@ locals {
         }
       }
       tags = {
+        Name = "aws-controller"
         type = "controller"
       }
     }
@@ -45,6 +46,7 @@ locals {
         }
       }
       tags = {
+        Name = "aws-worker"
         type = "worker"
       }
     }
@@ -62,6 +64,7 @@ locals {
         }
       }
       tags = {
+        Name = "aws-bgp"
         type = "bgp"
       }
     }
@@ -176,7 +179,7 @@ resource "aws_instance" "kube-controller" {
     tags        = local.multiple_instances.controller.root_block_device.tags
   }
   tags = merge(
-    { "Name" = var.name },
+    { "DeploymentGroup" = var.name },
     { "kubernetes.io/cluster/${var.name}" = "owned" },
     var.tags,
     local.multiple_instances.controller.tags
@@ -208,7 +211,7 @@ resource "aws_instance" "kube-worker" {
     tags        = local.multiple_instances.worker.root_block_device.tags
   }
   tags = merge(
-    { "Name" = var.name },
+    { "DeploymentGroup" = var.name },
     { "kubernetes.io/cluster/${var.name}" = "owned" },
     var.tags,
     local.multiple_instances.worker.tags
@@ -240,7 +243,7 @@ resource "aws_instance" "bgp-receiver" {
     tags        = local.multiple_instances.bgp.root_block_device.tags
   }
   tags = merge(
-    { "Name" = var.name },
+    { "DeploymentGroup" = var.name },
     var.tags,
     local.multiple_instances.bgp.tags
   )
