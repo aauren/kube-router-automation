@@ -51,9 +51,9 @@ spec:
       - name: kube-router
         {%- if kube_router_version is defined %}
         image: docker.io/cloudnativelabs/kube-router:{{ kube_router_version }}
-        {%- else -%}
+        {%- else %}
         image: docker.io/cloudnativelabs/kube-router
-        {% endif %}
+        {%- endif %}
         imagePullPolicy: Always
         args:
         - --run-router=true
@@ -64,19 +64,19 @@ spec:
         {%- if bgp_peer_ips is defined and bgp_router_enabled is defined %}
         - --peer-router-ips={{ bgp_peer_ips }}
         - --peer-router-asns={{ bgp_asn }}
-        {% endif -%}
-        {%- if cri == "containerd" -%}
+        {%- endif %}
+        {%- if cri == "containerd" %}
         - --runtime-endpoint=unix:///run/containerd/containerd.sock
-        {%- elif cri == "crio" -%}
+        {%- elif cri == "crio" %}
         - --runtime-endpoint=unix:///run/crio/crio.sock
-        {% endif %}
+        {%- endif %}
         - --cluster-asn={{ bgp_asn }}
         - --service-cluster-ip-range={{ service_network.ipv4 }}
         {%- if ipv6_enabled is defined %}
         - --enable-ipv6=true
         - --service-cluster-ip-range={{ service_network.ipv6 }}
         - --service-external-ip-range={{ external_ip_range.ipv6 }}
-        {% endif %}
+        {%- endif %}
         - --service-external-ip-range={{ external_ip_range.ipv4 }}
         - --advertise-external-ip=true
         - -v=1
