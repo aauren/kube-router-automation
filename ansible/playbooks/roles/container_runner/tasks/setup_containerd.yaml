@@ -33,19 +33,6 @@
     dest: /etc/containerd/config.toml
     mode: '0755'
 
-- name: Create containerd kubelet Config Dir
-  file:
-    path: /etc/systemd/system/kubelet.service.d
-    state: directory
-    mode: '0750'
-    owner: root
-    group: root
-
-- name: Write containerd Kubelet Config
-  template:
-    src: templates/kubernetes-containerd.conf.j2
-    dest: /etc/systemd/system/kubelet.service.d/0-containerd.conf
-
 - name: Start / Enable containerd Service
   systemd:
     name: containerd
