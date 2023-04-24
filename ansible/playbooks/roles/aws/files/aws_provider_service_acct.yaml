@@ -1,0 +1,7 @@
+---
+# Taken from: https://raw.githubusercontent.com/kubernetes/cloud-provider-aws/master/examples/existing-cluster/base/service-account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloud-controller-manager
+  namespace: kube-system

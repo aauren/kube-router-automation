@@ -1,0 +1,55 @@
+---
+# Taken from: https://raw.githubusercontent.com/kubernetes/cloud-provider-aws/master/examples/existing-cluster/base/aws-cloud-controller-manager-daemonset.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: aws-cloud-controller-manager
+  namespace: kube-system
+  labels:
+    k8s-app: aws-cloud-controller-manager
+spec:
+  selector:
+    matchLabels:
+      k8s-app: aws-cloud-controller-manager
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        k8s-app: aws-cloud-controller-manager
+    spec:
+      tolerations:
+        - key: node.cloudprovider.kubernetes.io/uninitialized
+          value: "true"
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      serviceAccountName: cloud-controller-manager
+      containers:
+        - name: aws-cloud-controller-manager
+          image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.27.1
+          args:
+            - --v=2
+            - --cloud-provider=aws
+            # Use the superset-role overlay if you don't want a token per controller
+            - --use-service-account-credentials=true
+            # Set --configure-cloud-routes=true if required by your CNI
+            - --configure-cloud-routes=false
+            # Tell it to look at our custom cloud-config.yaml
+            - --cloud-config=/etc/config/cloud-config.conf
+          resources:
+            requests:
+              cpu: 200m
+          volumeMounts:
+            - name: ccm-configmap
+              mountPath: /etc/config
+              readOnly: true
+      hostNetwork: true
+      volumes:
+        - name: ccm-configmap
+          configMap:
+            name: aws-cloud-controller-manager-config
