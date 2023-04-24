@@ -1,0 +1,4 @@
+containerRuntimeEndpoint: unix://{{ cri_socket | default("/var/run/dockershim.sock", true) }}
+{% if ansible_system_vendor == "Amazon EC2" %}
+providerID: {{ ansible_ec2_instance_id }}
+{% endif %}

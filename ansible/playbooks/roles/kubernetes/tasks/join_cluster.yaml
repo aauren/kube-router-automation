@@ -25,6 +25,14 @@
     owner: root
     group: root
 
+- name: Create kubeadm Patch Dir
+  file:
+    path: /etc/kubeadm/patches
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
 # here we have to parse the join command so that we can form a kubeadm JoinConfiguration. It looks like:
 # kubeadm join 10.0.0.1:6443 --token numbersletters.numbersletters --discovery-token-ca-cert-hash
 # sha256:longhexidecimalhashhere
@@ -48,11 +56,22 @@
     ca_hash: "{{ join_command.split(' ')[6] }}"
   when: kube_status.rc != 0
 
+- name: Get EC2 Metadata when running in Amazon
+  ec2_metadata_facts:
+  when: ansible_system_vendor == "Amazon EC2"
+
 - name: Template kubeadm Node JoinConfiguration
   template:
     src: templates/kubeadm-config-node.yaml.j2
     dest: /etc/kubeadm/kubeadmjoinconfig.yaml
   when: kube_status.rc != 0
+
+- name: Add Patches for kubelet Config
+  template:
+    src: templates/kubelet-config-patches.yaml.j2
+    # The name of the file is very specific, see the following for more details:
+    # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/control-plane-flags/#patches
+    dest: /etc/kubeadm/patches/kubeletconfiguration+strategic.yaml
 
 - name: Join Cluster with Token
   # Because we used a loop command (even over just one host) we have to parse results to get to stdout

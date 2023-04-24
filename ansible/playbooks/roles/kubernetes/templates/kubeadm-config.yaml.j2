@@ -2,6 +2,7 @@
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: ClusterConfiguration
 kubernetesVersion: {{ kubernetes_version.stdout }}
+clusterName: kube-router
 #apiServer:
 #  extraArgs:
 #    feature-gates: NetworkPolicyEndPort=true
@@ -13,17 +14,19 @@ networking:
   podSubnet: {{ pod_network.ipv4 | default("10.242.0.0/16", true) }}
 {% endif %}
 {% if ansible_system_vendor == "Amazon EC2" %}
-controllerManager:
-  extraArgs:
-    cloud-provider: external
-    external-cloud-volume-plugin: aws
-apiServer:
-  extraArgs:
-    cloud-provider: external
+#controllerManager:
+#  extraArgs:
+#    cloud-provider: external
+#    external-cloud-volume-plugin: aws
+#apiServer:
+#  extraArgs:
+#    cloud-provider: external
 {% endif %}
 ---
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: InitConfiguration
+patches:
+  directory: /etc/kubeadm/patches
 localAPIEndpoint:
   advertiseAddress: {{ ansible_default_ipv4.address }}
   bindPort: 6443
@@ -33,13 +36,17 @@ nodeRegistration:
   taints: null
   kubeletExtraArgs:
 {% if ansible_system_vendor == "Amazon EC2" %}
-    # Supposedly node-ip isn't supported when using a cloud provider
-    # cloud-provider: external
-{% endif %}
-{% if ipv6_enabled is defined %}
-    node-ip: {{ ansible_default_ipv4.address }},{{ ansible_default_ipv6.address }}
+    # node-ip isn't supported when using a cloud provider
+    # cloud-provider is currently deprecated and will likely need to be removed soon, for now, it still provides some
+    # value in that it provides a special taint on the node until the cloud-controller has initialized the node
+    cloud-provider: external
 {% else %}
+  {# In the case of EC2 we rely on the AWS cloud-provider to provide these options #}
+  {% if ipv6_enabled is defined %}
+    node-ip: {{ ansible_default_ipv4.address }},{{ ansible_default_ipv6.address }}
+  {% else %}
     node-ip: {{ ansible_default_ipv4.address }}
+  {% endif %}
 {% endif %}
 # To see more options that could go here, see: https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#config-file
 # You can also see the default values with: kubeadm config print init-defaults

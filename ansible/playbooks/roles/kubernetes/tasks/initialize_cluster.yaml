@@ -8,14 +8,33 @@
     owner: root
     group: root
 
+- name: Create kubeadm Patch Dir
+  file:
+    path: /etc/kubeadm/patches
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
 - name: Get Kubernetes Version
   shell: kubelet --version | awk '{print $2}'
   register: kubernetes_version
+
+- name: Get EC2 Metadata when running in Amazon
+  ec2_metadata_facts:
+  when: ansible_system_vendor == "Amazon EC2"
 
 - name: Generate kubeadm Config
   template:
     src: templates/kubeadm-config.yaml.j2
     dest: /etc/kubeadm/kubeadmconfig.yaml
+
+- name: Add Patches for kubelet Config
+  template:
+    src: templates/kubelet-config-patches.yaml.j2
+    # The name of the file is very specific, see the following for more details:
+    # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/control-plane-flags/#patches
+    dest: /etc/kubeadm/patches/kubeletconfiguration+strategic.yaml
 
 - name: Check Cluster Status
   command: kubectl --kubeconfig="/etc/kubernetes/admin.conf" get componentstatuses

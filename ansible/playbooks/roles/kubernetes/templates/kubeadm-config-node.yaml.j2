@@ -1,5 +1,7 @@
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: JoinConfiguration
+patches:
+  directory: /etc/kubeadm/patches
 discovery:
   bootstrapToken:
     apiServerEndpoint: {{ api_server }}
@@ -9,11 +11,15 @@ discovery:
 nodeRegistration:
   kubeletExtraArgs:
 {% if ansible_system_vendor == "Amazon EC2" %}
-    # Supposedly node-ip isn't supported when using a cloud provider
-    # cloud-provider: external
-{% endif %}
-{% if ipv6_enabled is defined %}
-    node-ip: "{{ ansible_default_ipv4.address }},{{ ansible_default_ipv6.address }}"
+    # node-ip isn't supported when using a cloud provider
+    # cloud-provider is currently deprecated and will likely need to be removed soon, for now, it still provides some
+    # value in that it provides a special taint on the node until the cloud-controller has initialized the node
+    cloud-provider: external
 {% else %}
-    node-ip: "{{ ansible_default_ipv4.address }}"
+  {# In the case of EC2 we rely on the AWS cloud-provider to provide these options #}
+  {% if ipv6_enabled is defined %}
+    node-ip: {{ ansible_default_ipv4.address }},{{ ansible_default_ipv6.address }}
+  {% else %}
+    node-ip: {{ ansible_default_ipv4.address }}
+  {% endif %}
 {% endif %}
