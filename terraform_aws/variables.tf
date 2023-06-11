@@ -26,6 +26,11 @@ variable "cidr_block" {
   default = "10.0.0.0/18"
 }
 
+variable "pod_net" {
+  type    = string
+  default = "10.242.0.0/16"
+}
+
 variable "public_cidr_breakdowns" {
   type = map(any)
   default = {
