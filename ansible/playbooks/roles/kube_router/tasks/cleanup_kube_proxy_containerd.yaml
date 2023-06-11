@@ -11,3 +11,7 @@
   command: |
     ctr run --rm --privileged --net-host --mount type=bind,src=/lib/modules,dst=/lib/modules,options=rbind:ro
     registry.k8s.io/kube-proxy-amd64:{{ kubernetes_version.stdout }} kube-proxy-cleanup kube-proxy --cleanup
+  register: clean_result
+  until: clean_result.rc == 0
+  retries: 10
+  delay: 10
