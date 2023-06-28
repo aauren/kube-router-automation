@@ -42,6 +42,18 @@
 # An invocation that only runs specific tags might look like:
 # ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/kube-router-containerd.yaml --tags kube-router
 
+- name: Ensure Hosts are Up
+  gather_facts: false
+  hosts: all
+  tags:
+    - setup
+    - checks
+  tasks:
+    - name: Check for Hosts to be up
+      import_role:
+        name: common
+        tasks_from: wait_for_ssh
+
 - name: Ensure Basic Host Config
   hosts: all
   become: true

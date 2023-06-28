@@ -1,0 +1,9 @@
+---
+
+# Wait for host to be available before proceeding
+- name: Wait for Host availability
+  wait_for:
+    port: 22
+    host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+    search_regex: OpenSSH
+  connection: local

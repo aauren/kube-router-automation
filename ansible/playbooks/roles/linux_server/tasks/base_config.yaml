@@ -18,3 +18,7 @@
       - iperf3
       - ndisc6
     update_cache: true
+  register: apt_status
+  until: apt_status is success
+  delay: 6
+  retries: 20
