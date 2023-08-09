@@ -12,6 +12,7 @@ networking:
   serviceSubnet: {{ service_network.ipv4 | default("10.96.0.0/16", true) }},{{ service_network.ipv6 | default("2001:db8:42:1::/112", true) }}
 {% else %}
   podSubnet: {{ pod_network.ipv4 | default("10.242.0.0/16", true) }}
+  serviceSubnet: {{ service_network.ipv4 | default("10.96.0.0/16", true) }}
 {% endif %}
 {% if ansible_system_vendor == "Amazon EC2" %}
 #controllerManager:
