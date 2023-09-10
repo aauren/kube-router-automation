@@ -2,6 +2,9 @@
 external_ip_range:
   ipv4: 10.243.0.0/24
   ipv6: 2001:db8:42:1100::/56
+loadbalancer_ip_range:
+  ipv4: 10.243.1.0/24
+  ipv6: 2001:db8:42:1200::/56
 bgp_asn: 4200000001
 pod_network:
   ipv4: 10.242.0.0/16

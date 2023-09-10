@@ -91,6 +91,10 @@ exit-address-family
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Allow external IP range and allows /32 addresses to be specified
 ip prefix-list pl-allowed-adv seq 5 permit {{ external_ip_range.ipv4 }} le 32
+{% if loadbalancer_enabled %}
+# Allow loadbalancer IP range and allows /32 addresses to be specified
+ip prefix-list pl-allowed-adv seq 6 permit {{ loadbalancer_ip_range.ipv4 }} le 32
+{% endif %}
 # Allow pod IP addresses and allows /24 addresses to be specified (which is the default from kube-controller-manager)
 ip prefix-list pl-allowed-adv seq 10 permit {{ pod_network.ipv4 }} le 24
 # Allow Cluster IP Addresses (from Kubernetes default range) and allows /32 addresses to be specified
@@ -102,6 +106,10 @@ ip prefix-list pl-allowed-adv seq 50 deny any
 {% if ipv6_enabled %}
 # Allow external IP range and allows /128 addresses to be specified
 ipv6 prefix-list pl-allowed-v6-adv seq  5 permit {{ external_ip_range.ipv6 }} le 128
+{% if loadbalancer_enabled %}
+# Allow loadbalancer IP range and allows /128 addresses to be specified
+ipv6 prefix-list pl-allowed-v6-adv seq  6 permit {{ loadbalancer_ip_range.ipv6 }} le 128
+{% endif %}
 # Allow pod IP addresses and allows /64 addresses to be specified
 ipv6 prefix-list pl-allowed-v6-adv seq  10 permit {{ pod_network.ipv6 }} le 64
 # Allow cluster IP range and allows /128 addresses to be specified

@@ -77,6 +77,13 @@ spec:
         - --service-cluster-ip-range={{ service_network.ipv6 }}
         - --service-external-ip-range={{ external_ip_range.ipv6 }}
         {%- endif %}
+        {%- if loadbalancer_enabled is defined %}
+        - --advertise-loadbalancer-ip=true
+        {%- if ipv6_enabled is defined %}
+        - --loadbalancer-ip-range={{ loadbalancer_ip_range.ipv6 }}
+        {%- endif %}
+        - --loadbalancer-ip-range={{ loadbalancer_ip_range.ipv4 }}
+        {%- endif %}
         - --service-external-ip-range={{ external_ip_range.ipv4 }}
         - --advertise-external-ip=true
         - -v=1
@@ -85,6 +92,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         - name: KUBE_ROUTER_CNI_CONF_FILE
           value: /etc/cni/net.d/10-kuberouter.conflist
         livenessProbe:
@@ -221,6 +232,22 @@ rules:
       - get
       - list
       - watch
+{%- if loadbalancer_enabled is defined %}
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - leases
+    verbs:
+      - get
+      - create
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - services/status
+    verbs:
+      - update
+{%- endif %}
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
