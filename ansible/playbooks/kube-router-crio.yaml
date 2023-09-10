@@ -8,14 +8,17 @@
 #
 #
 # Variables available to pass at runtime:
+#   - bgp_asn: Allows you to set the default BGP ASN that kube-router and FRR will use (default: 4200000001)
+#   - bgp_router_enabled: Enables / Disables peering kube-router with BGP route server for testing announced IPs
+#     (default: true)
+#   - external_ip_range: Allows you to set the allowed External IP range for kube-router to use (default: 10.243.0.0/24)
 #   - file_manifest: Allows you to specify a path to a kube-router manifest from file rather than Ansible downloading
 #     it from upstream (default: blank)
 #   - ipv6_enabled: Enable IPv6 functionality, sets default IPv6 ranges that can be overridden in vars
 #   - kube_proxy_replacement: Allows you to enable / disable kube_proxy_replacement mode (default: true)
-#   - external_ip_range: Allows you to set the allowed External IP range for kube-router to use (default: 10.243.0.0/24)
-#   - bgp_asn: Allows you to set the default BGP ASN that kube-router and FRR will use (default: 4200000001)
-#   - bgp_router_enabled: Enables / Disables peering kube-router with BGP route server for testing announced IPs
-#     (default: true)
+#   - kube_router_version: Allows you to override the container tag of kube-router
+#   - loadbalancer_enabled: Enable loadbalancer functionality, sets default loadbalancer ranges that can be overridden
+#     in vars
 #
 # Tags in Playbook:
 #   - setup: Basic setup tasks for host config, cri-o, and frr
@@ -41,6 +44,11 @@
 #
 # An invocation that only runs specific tags might look like:
 # ansible-playbook -i ansible/inventory/hosts.yaml ansible/playbooks/kube-router-crio.yaml --tags kube-router
+#
+# An invocation that enables IPv6 and the load balancing controller with a specific version of kube-router might look
+# like:
+# ansible-playbook -i ansible/inventory/aws.yaml ansible/playbooks/kube-router-containerd.yaml -e ipv6_enabled=true \
+#   -e kube_router_version=v2.0.0-rc6 -e loadbalancer_enabled=true
 
 - name: Ensure Hosts are Up
   gather_facts: false
