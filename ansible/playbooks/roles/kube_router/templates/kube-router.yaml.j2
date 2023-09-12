@@ -232,6 +232,14 @@ rules:
       - get
       - list
       - watch
+  - apiGroups:
+      - "discovery.k8s.io"
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
+      - watch
 {%- if loadbalancer_enabled is defined %}
   - apiGroups:
       - "coordination.k8s.io"
