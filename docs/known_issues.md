@@ -45,3 +45,22 @@ significant number of changes would be necessary in order to make this work
 properly. So at this point, users should consider the number of VMs / Instances
 to be set at the repo defaults unless they really want to dive into it and
 abstract the terraform / playbooks.
+
+## kube-router / AWS Cloud Controller Manager race condition with IPv6
+
+In order for nodes to get all of their IP addresses on their node object the
+cloud provider has to do this. This was code that used to exist in the kubelet,
+but it was removed in v1.25 and beyond. Now, this information comes from the
+cloud-controller-manager. The problem is that the cloud-controller-manager isn't
+able to route or do any networking until kube-router is available. Meanwhile, if
+kube-router was enabled for IPv6 and it doesn't see an address for IPv6 on the
+node, then it will refuse to start.
+
+For whatever reason, this doesn't seem to happen all the time, but it definitely
+does seem to happen from time to time. For more information, see:
+
+* https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/#running-cloud-controller-manager
+
+The easiest way around this is to temporarily disable IPv6, let the cloud
+controller manager bootstrap and add the IPs, and then re-enable IPv6 in
+kube-router.
