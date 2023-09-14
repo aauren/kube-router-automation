@@ -78,6 +78,7 @@ spec:
         - --service-external-ip-range={{ external_ip_range.ipv6 }}
         {%- endif %}
         {%- if loadbalancer_enabled is defined %}
+        - --run-loadbalancer=true
         - --advertise-loadbalancer-ip=true
         {%- if ipv6_enabled is defined %}
         - --loadbalancer-ip-range={{ loadbalancer_ip_range.ipv6 }}
