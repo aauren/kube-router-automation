@@ -2,6 +2,16 @@
 
 This is just a generic place for additional information about Kubernetes that might be helpful.
 
+## Easily Debug Containers
+
+This allows you to attach to containers with networking tooling. Also ensure that the container's security context isn't
+overriding what user the pod is executing as, or you may not be able to get `netadmin` which is required for most
+networking changes or debugging tools like `tcpdump`.
+
+```sh
+kubectl debug -it whoami-txp6b --image=nicolaka/netshoot --target=whoami --share-processes=true --profile netadmin
+```
+
 ## Create Load Balancer IPs
 
 Setting up a LoadBalancer can be hard, however, it is possible to mock the LoadBalancer functionality, by changing the
