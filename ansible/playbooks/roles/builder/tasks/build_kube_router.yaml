@@ -22,9 +22,21 @@
     cmd: make gofmt lint test
   when: testing is defined
 
+- name: Find Git Version
+  shell:
+    chdir: "{{ repo_path }}"
+    cmd: git describe --tags --dirty
+  register: git_commit
+
+- name: Set Build Date
+  command: date +%Y-%m-%dT%H:%M:%S%z
+  register: build_date
+
 - name: Build kube-router
   shell:
     chdir: "{{ repo_path }}"
     cmd: >
-      CGO_ENABLED=0 {{ go_ver | default("go", true) }} build -gcflags="all=-N -l" -o
-      kube-router cmd/kube-router/kube-router.go
+      CGO_ENABLED=0 {{ go_ver | default("go", true) }} build -gcflags="all=-N -l" -ldflags
+      "-X github.com/cloudnativelabs/kube-router/v2/pkg/version.Version={{ git_commit.stdout }}
+      -X github.com/cloudnativelabs/kube-router/v2/pkg/version.BuildDate={{ build_date.stdout }}"
+      -o kube-router cmd/kube-router/kube-router.go
