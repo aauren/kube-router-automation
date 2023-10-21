@@ -25,7 +25,7 @@
 - name: Find Git Version
   shell:
     chdir: "{{ repo_path }}"
-    cmd: git describe --tags --dirty
+    cmd: git describe --tags --abbrev=0
   register: git_commit
 
 - name: Set Build Date
