@@ -91,7 +91,7 @@ exit-address-family
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Allow external IP range and allows /32 addresses to be specified
 ip prefix-list pl-allowed-adv seq 5 permit {{ external_ip_range.ipv4 }} le 32
-{% if loadbalancer_enabled %}
+{% if loadbalancer_enabled is defined and loadbalancer_enabled %}
 # Allow loadbalancer IP range and allows /32 addresses to be specified
 ip prefix-list pl-allowed-adv seq 6 permit {{ loadbalancer_ip_range.ipv4 }} le 32
 {% endif %}
@@ -103,10 +103,10 @@ ip prefix-list pl-allowed-adv seq 15 permit {{ service_network.ipv4 }} le 32
 # Deny all other BGP imports
 ip prefix-list pl-allowed-adv seq 50 deny any
 !
-{% if ipv6_enabled %}
+{% if ipv6_enabled is defined and ipv6_enabled %}
 # Allow external IP range and allows /128 addresses to be specified
 ipv6 prefix-list pl-allowed-v6-adv seq  5 permit {{ external_ip_range.ipv6 }} le 128
-{% if loadbalancer_enabled %}
+{% if loadbalancer_enabled is defined and loadbalancer_enabled %}
 # Allow loadbalancer IP range and allows /128 addresses to be specified
 ipv6 prefix-list pl-allowed-v6-adv seq  6 permit {{ loadbalancer_ip_range.ipv6 }} le 128
 {% endif %}
