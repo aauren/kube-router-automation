@@ -1,6 +1,6 @@
-aws-controller ansible_host=${ controller } ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-aws-worker ansible_host=${ worker } ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-aws-bgp ansible_host=${ bgp } ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+aws-controller ansible_host=${ controller } ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_python_interpreter=/usr/bin/python3
+aws-worker ansible_host=${ worker } ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_python_interpreter=/usr/bin/python3
+aws-bgp ansible_host=${ bgp } ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_python_interpreter=/usr/bin/python3
 
 [container_runners]
 aws-controller
