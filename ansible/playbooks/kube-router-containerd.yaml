@@ -204,3 +204,13 @@
       import_role:
         name: manifests
         tasks_from: deploy_manifests
+
+- name: Copy Config to Localhost
+  hosts: localhost
+  tasks:
+    - name: Deploy Misc Manifests to Cluster
+      tags:
+        - kubeconfig
+      import_role:
+        name: config
+        tasks_from: localize_config

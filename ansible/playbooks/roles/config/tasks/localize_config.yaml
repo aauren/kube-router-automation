@@ -1,0 +1,72 @@
+---
+
+- name: Find UID
+  become: false
+  command: id -u
+  register: user_id
+
+- name: Find GID
+  become: false
+  command: id -g
+  register: group_id
+
+- name: Find Home
+  become: false
+  command: echo ${HOME}
+  register: home
+
+- name: Find Remote Home
+  become: false
+  command: echo ${HOME}
+  register: remote_home
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['leader'] }}"
+
+- name: Output UID & GID
+  debug:
+    msg: "User ID: {{ user_id.stdout }} / Group ID: {{ group_id.stdout }}"
+
+- name: Create kube Config Dir in User's Home
+  file:
+    path: "{{ home.stdout }}/.kube"
+    state: directory
+    mode: '0750'
+    owner: "{{ user_id.stdout }}"
+    group: "{{ group_id.stdout }}"
+
+- name: Grab kube config from Leader
+  slurp:
+    src: "{{ remote_home.results[0].stdout }}/.kube/config"
+  delegate_to: "{{ item }}"
+  register: kube_config
+  loop: "{{ groups['leader'] }}"
+
+- name: Check if local kube/config exists locally
+  stat:
+    path: "{{ home.stdout }}/.kube/config"
+  register: local_config_path
+
+- name: Backup existing kubeconfig
+  copy:
+    # Because we used a loop command (even over just one host) we have to parse results to get to stdout
+    src: "{{ home.stdout }}/.kube/config"
+    dest: "{{ home.stdout }}/.kube/config.bak"
+    mode: '0600'
+    owner: "{{ user_id.stdout }}"
+    group: "{{ group_id.stdout }}"
+  when: local_config_path.stat.exists
+
+- name: Copy Kube Config to Home
+  copy:
+    # Because we used a loop command (even over just one host) we have to parse results to get to stdout
+    content: "{{ kube_config['results'][0]['content'] | b64decode }}"
+    dest: "{{ home.stdout }}/.kube/config"
+    mode: '0600'
+    owner: "{{ user_id.stdout }}"
+    group: "{{ group_id.stdout }}"
+
+- name: Replace internal IP with external IP
+  replace:
+    path: "{{ home.stdout }}/.kube/config"
+    regexp: '{{ hostvars["aws-controller"].ansible_default_ipv4.address }}'
+    replace: '{{ hostvars["aws-controller"].ansible_host }}'
