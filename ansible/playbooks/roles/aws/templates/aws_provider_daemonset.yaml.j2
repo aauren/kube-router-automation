@@ -31,7 +31,7 @@ spec:
       serviceAccountName: cloud-controller-manager
       containers:
         - name: aws-cloud-controller-manager
-          image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.27.1
+          image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.29.1
           args:
             - --v=2
             - --cloud-provider=aws
@@ -41,6 +41,13 @@ spec:
             - --configure-cloud-routes=false
             # Tell it to look at our custom cloud-config.yaml
             - --cloud-config=/etc/config/cloud-config.conf
+          # We have to tell it about the master because kube-router won't work until the cloud-provider adds the IPv6
+          # address on the node
+          env:
+          - name: KUBERNETES_SERVICE_PORT
+            value: "6443"
+          - name: KUBERNETES_SERVICE_HOST
+            value: "{{ hostvars["aws-controller"].ansible_default_ipv4.address }}"
           resources:
             requests:
               cpu: 200m

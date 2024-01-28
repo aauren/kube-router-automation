@@ -17,6 +17,11 @@
     src: templates/aws_provider_configmap.yaml.j2
     dest: "{{ ansible_env.HOME }}/manifests/aws_provider_configmap.yaml"
 
+- name: Generate AWS cloud-config daemonset
+  template:
+    src: templates/aws_provider_daemonset.yaml.j2
+    dest: "{{ ansible_env.HOME }}/manifests/aws_provider_manager_daemonset.yaml"
+
 - name: Concatenate Manifests
   shell: "cat {{ ansible_env.HOME }}/manifests/aws_provider_*.yaml > {{ ansible_env.HOME }}/manifests/aws_all.yaml"
 
