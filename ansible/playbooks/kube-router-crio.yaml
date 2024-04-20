@@ -215,3 +215,4 @@
       import_role:
         name: config
         tasks_from: localize_config
+      when: ansible_system_vendor == "Amazon EC2"
