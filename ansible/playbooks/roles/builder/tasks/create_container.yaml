@@ -19,7 +19,7 @@
 - name: Find Container Name
   set_fact:
     container_name:
-      "{{ container_build_out.stdout_lines[-2] | regex_search('^Successfully tagged (.*)$', '\\1') | first }}"
+      "{{ container_build_out.stderr | regex_search('naming to ([^ ]+)', '\\1') | first }}"
 
 - name: Container Name from Build
   debug:
