@@ -17,6 +17,7 @@
 #   - ipv6_enabled: Enable IPv6 functionality, sets default IPv6 ranges that can be overridden in vars
 #   - kube_proxy_replacement: Allows you to enable / disable kube_proxy_replacement mode (default: true)
 #   - kube_router_version: Allows you to override the container tag of kube-router
+#   - kubernetes_version: Allows you to specify the version of k8s you're installing (default: 1.30)
 #   - loadbalancer_enabled: Enable loadbalancer functionality, sets default loadbalancer ranges that can be overridden
 #     in vars
 #

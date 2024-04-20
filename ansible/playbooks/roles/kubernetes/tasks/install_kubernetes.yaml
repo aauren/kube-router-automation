@@ -2,12 +2,12 @@
 
 - name: Add Kubernetes Repo Key
   apt_key:
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    url: https://pkgs.k8s.io/core:/stable:/{{ kubernetes_version }}/deb/Release.key
     state: present
 
 - name: Add Kubernetes Repository
   apt_repository:
-    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    repo: deb https://pkgs.k8s.io/core:/stable:/{{ kubernetes_version }}/deb/ /
     state: present
     filename: kubernetes
 
