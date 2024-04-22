@@ -26,6 +26,19 @@
   become: true
   shell:
     cmd: podman load -i {{ ansible_env.HOME }}/kube-router.tar
+  register: container_load_out
+  when: cri == "crio"
+
+- name: Find Loaded Cri-O Image Name
+  set_fact:
+    loaded_name:
+      "{{ container_load_out.stdout | regex_search('Loaded image\\(s\\): (.+)', '\\1') | first }}"
+  when: cri == "crio"
+
+- name: Tag Cri-o Image
+  become: true
+  shell:
+    cmd: podman image tag {{ loaded_name }} localhost/{{ hostvars['localhost']['unique_container_name'] }}
   when: cri == "crio"
 
 - name: Add Image to Docker
