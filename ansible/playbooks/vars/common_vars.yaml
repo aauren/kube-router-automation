@@ -12,4 +12,4 @@ pod_network:
 service_network:
   ipv4: 10.96.0.0/16
   ipv6: 2001:db8:42:1::/112
-kubernetes_version: 1.30
+kubernetes_version: "v1.30"
