@@ -70,3 +70,4 @@
     path: "{{ home.stdout }}/.kube/config"
     regexp: '{{ hostvars["aws-controller"].ansible_default_ipv4.address }}'
     replace: '{{ hostvars["aws-controller"].ansible_host }}'
+  when: hostvars["aws-controller"] is defined
