@@ -123,6 +123,9 @@ spec:
         - name: xtables-lock
           mountPath: /run/xtables.lock
           readOnly: false
+        - name: rt-tables
+          mountPath: /etc/iproute2/rt_tables
+          readOnly: false
         {%- if cri == "containerd" %}
         - name: containerd-sock
           mountPath: /run/containerd/containerd.sock
@@ -188,6 +191,9 @@ spec:
         hostPath:
           path: /run/xtables.lock
           type: FileOrCreate
+      - name: rt-tables
+        hostPath:
+          path: /etc/iproute2/rt_tables
       - name: host-opt
         hostPath:
           path: /opt

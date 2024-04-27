@@ -1,5 +1,20 @@
 ---
 
+- name: Check rt_tables exists
+  stat:
+    path: /etc/iproute2/rt_tables
+  register: rt_tabs
+
+- name: Ensure rt_tables is installed
+  become: true
+  copy:
+    remote_src: true
+    src: /usr/share/iproute2/rt_tables
+    dest: /etc/iproute2/rt_tables
+    directory_mode: 0755
+    mode: preserve
+  when: rt_tabs.stat.exists is not defined or rt_tabs.stat.exists == False
+
 - name: Create Manifest Dir
   file:
     path: "{{ ansible_env.HOME }}/manifests"
