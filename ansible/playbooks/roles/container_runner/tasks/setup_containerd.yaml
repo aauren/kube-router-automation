@@ -39,3 +39,27 @@
     enabled: true
     state: restarted
     daemon_reload: true
+
+- name: Get Latest nerdctl Tarball Version
+  uri:
+    url: "https://api.github.com/repos/containerd/nerdctl/releases/latest"
+    return_content: true
+  register: json_response
+
+- name: Parse Latest Nerdctl Tarball Version
+  set_fact:
+    amd64_nerdctl: "{{ json_response | community.general.json_query(download_query) }}"
+  vars:
+    download_query: "json.assets[?contains(name, 'linux-amd64') && !contains(name, 'full')].browser_download_url"
+
+# - name: Show Download URL
+#  debug:
+#    msg: "nerdctl Download URL: {{amd64_nerdctl[0]}}"
+
+- name: Grab nerdctl Binary
+  unarchive:
+    src: "{{ amd64_nerdctl[0] }}"
+    dest: /usr/local/bin
+    remote_src: true
+    include:
+      - nerdctl
