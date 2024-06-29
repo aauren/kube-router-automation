@@ -24,7 +24,7 @@ resource "libvirt_pool" "kube-router-storage" {
   # and bandwidth. Also, this provider isn't capable of resizing the downloaded images, so the disks end up really
   # small. However, QEMU can expand the image to anything we want pretty easily.
   provisioner "local-exec" {
-    command     = "${path.module}/../scripts/cache_ubuntu_img.sh"
+    command = "${path.module}/../scripts/cache_ubuntu_img.sh"
     environment = {
       IMG_CACHE_DIR  = var.image_cache_dir
       UBUNTU_IMG_URL = var.ubuntu_image_url
@@ -35,8 +35,8 @@ resource "libvirt_pool" "kube-router-storage" {
 
 # Setup the NAT network to use for our kube-router VMs
 resource "libvirt_network" "kube-router-net" {
-  name      = "kube-router-net"
-  mode      = "nat"
+  name = "kube-router-net"
+  mode = "nat"
   #domain    = "k8s.local"
   #addresses = ["10.241.0.0/16", "2001:db8:ca2:2::/64"]
   addresses = ["10.241.0.0/16"]
@@ -77,10 +77,10 @@ resource "libvirt_cloudinit_disk" "commoninit" {
 ######################### Per kube-router VM Definitions #########################
 resource "libvirt_volume" "kube-router-vm" {
   for_each = toset(["kube-router-vm1", "kube-router-vm2"])
-  name   = each.key
-  pool   = libvirt_pool.kube-router-storage.name
-  source = "${var.image_cache_dir}/base_image.img"
-  format = "qcow2"
+  name     = each.key
+  pool     = libvirt_pool.kube-router-storage.name
+  source   = "${var.image_cache_dir}/base_image.img"
+  format   = "qcow2"
 }
 
 resource "libvirt_domain" "kube-router-vm" {
@@ -130,10 +130,10 @@ resource "libvirt_domain" "kube-router-vm" {
 ######################### Per bgp-router VM Definitions #########################
 resource "libvirt_volume" "bgp-router" {
   for_each = toset(["bgp-route-vm1"])
-  name   = each.key
-  pool   = libvirt_pool.kube-router-storage.name
-  source = "${var.image_cache_dir}/base_image.img"
-  format = "qcow2"
+  name     = each.key
+  pool     = libvirt_pool.kube-router-storage.name
+  source   = "${var.image_cache_dir}/base_image.img"
+  format   = "qcow2"
 }
 
 resource "libvirt_domain" "bgp-router-vm" {
