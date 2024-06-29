@@ -46,19 +46,13 @@ resource "libvirt_network" "kube-router-net" {
 }
 
 # Template the user data found in configs/cloud_init.cfg
-data "template_file" "user_data" {
-  template = file("${path.module}/configs/cloud_init.cfg")
-  vars = {
+locals {
+  user_data = templatefile("${path.module}/configs/cloud_init.cfg", {
     root_password = var.root_password
-    username = var.username
-    user_ssh_key = var.user_ssh_key
-    user_groups = var.user_groups
-  }
-}
-
-# Template the network config found in configs/network.cfg
-data "template_file" "network_config" {
-  template = file("${path.module}/configs/network.cfg")
+    username      = var.username
+    user_ssh_key  = var.user_ssh_key
+    user_groups   = var.user_groups
+  })
 }
 
 # Combine the two above templates and present it as a cloud-init ISO which is stored in the same pool as our images
@@ -68,8 +62,8 @@ data "template_file" "network_config" {
 # you can add also meta_data field
 resource "libvirt_cloudinit_disk" "commoninit" {
   name           = "commoninit.iso"
-  user_data      = data.template_file.user_data.rendered
-  network_config = data.template_file.network_config.rendered
+  user_data      = local.user_data
+  network_config = file("${path.module}/configs/network.cfg")
   pool           = libvirt_pool.kube-router-storage.name
 }
 
