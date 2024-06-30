@@ -63,6 +63,24 @@
         name: common
         tasks_from: wait_for_ssh
 
+- name: Ensure IPv6 NAT Config
+  hosts: localhost
+  become: true
+  tags:
+    - setup
+    - baseline
+  vars_files:
+    - vars/common_vars.yaml
+  tasks:
+    - name: Add IPv6 Tables Masquerade On Host If Enabled
+      iptables:
+        ip_version: ipv6
+        table: nat
+        chain: POSTROUTING
+        source: "{{ node_ip_range.ipv6 }}"
+        jump: MASQUERADE
+      when: ipv6_enabled is defined and hostvars["aws-controller"] is not defined
+
 - name: Ensure Basic Host Config
   hosts: all
   become: true
