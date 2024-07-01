@@ -7,6 +7,7 @@ apiServer:
   certSANs:
     - "127.0.0.1"
     - "{{ ansible_default_ipv4.address }}"
+    - "{{ ansible_default_ipv6.address }}"
     - "{{ ansible_host }}"
 #  extraArgs:
 #    feature-gates: NetworkPolicyEndPort=true
