@@ -1,4 +1,4 @@
 ---
 
-ubuntu_version: xUbuntu_22.04
+ubuntu_version: xUbuntu_24.04
 crio_version: "1.31"

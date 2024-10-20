@@ -17,6 +17,7 @@
       - tcpdump
       - iperf3
       - ndisc6
+      - gpg
     update_cache: true
   register: apt_status
   until: apt_status is success
