@@ -8,9 +8,8 @@
   ignore_errors: true
 
 - name: Install FRR
-  apt:
+  package:
     name: frr
-    update_cache: true
 
 - name: Enable BGP Daemon in FRR
   lineinfile:

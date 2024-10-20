@@ -1,46 +1,64 @@
 ---
 
+# cri-o misses a lot of functionality, and podman appears to be used to subsidize it, so we install it here
 - name: Install podman
-  apt:
-    pkg:
+  package:
+    name:
       - podman
-    update_cache: true
 
-- name: Add libcontainers Repo Key
+- name: Add libcontainers Repo Key (apt)
   apt_key:
     url:
       "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ ubuntu_version }}/Release.key"
     state: present
+  when: ansible_pkg_mgr == "apt"
 
-- name: Add libcontainers-crio Repo Key
+- name: Add libcontainers-crio Repo Key (apt)
   apt_key:
     url:
       "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/\
        {{ crio_version }}/{{ ubuntu_version }}/Release.key"
     state: present
+  when: ansible_pkg_mgr == "apt"
 
-- name: Add libcontainers Repository
+- name: Add libcontainers Repository (apt)
   apt_repository:
     repo: "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ ubuntu_version }}/ /"
     state: present
     filename: backports
+  when: ansible_pkg_mgr == "apt"
 
-- name: Add libcontainers-crio Repository
+- name: Add libcontainers-crio Repository (apt)
   apt_repository:
     repo:
       "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/\
        {{ crio_version }}/{{ ubuntu_version }}/ /"
     state: present
     filename: backports
+  when: ansible_pkg_mgr == "apt"
 
-# cri-o misses a lot of functionality, and podman appears to be used to subsidize it, so we install it here
-- name: Install cri-o Components
+- name: Add cri-o repos (dnf)
+  template:
+    src: templates/crio.repo.j2
+    dest: /etc/yum.repos.d/pkgs.k8s.io_addons_cri-o_stable_v{{ crio_version }}_rpm_.repo
+  when: ansible_pkg_mgr == "dnf"
+
+- name: Install cri-o Components (apt)
   apt:
     pkg:
       - cri-o
       - cri-o-runc
       - containernetworking-plugins
     update_cache: true
+  when: ansible_pkg_mgr == "apt"
+
+- name: Install cri-o Components (dnf)
+  dnf:
+    name:
+      - cri-o
+      - containernetworking-plugins
+    update_cache: true
+  when: ansible_pkg_mgr == "dnf"
 
 - name: Create cri-o /var/lib Dir
   file:

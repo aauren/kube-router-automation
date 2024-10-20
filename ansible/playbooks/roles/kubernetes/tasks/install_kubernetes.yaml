@@ -1,23 +1,41 @@
 ---
 
-- name: Add Kubernetes Repo Key
+- name: Add Kubernetes Repo Key (apt)
   apt_key:
     url: https://pkgs.k8s.io/core:/stable:/{{ kubernetes_version }}/deb/Release.key
     state: present
+  when: ansible_pkg_mgr == "apt"
 
-- name: Add Kubernetes Repository
+- name: Add Kubernetes Repository (apt)
   apt_repository:
     repo: deb https://pkgs.k8s.io/core:/stable:/{{ kubernetes_version }}/deb/ /
     state: present
     filename: kubernetes
+  when: ansible_pkg_mgr == "apt"
 
-- name: Install Kubernetes Components
+- name: Add Kubernetes repo (dnf)
+  template:
+    src: templates/kubernetes.repo.j2
+    dest: /etc/yum.repos.d/pkgs.k8s.io_core_stable_v{{ kubernetes_version }}_rpm_.repo
+  when: ansible_pkg_mgr == "dnf"
+
+- name: Install Kubernetes Components (apt)
   apt:
     pkg:
       - kubelet
       - kubeadm
       - kubectl
-    update_cache: yes
+    update_cache: true
+  when: ansible_pkg_mgr == "apt"
+
+- name: Install Kubernetes Components (dnf)
+  dnf:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    update_cache: true
+  when: ansible_pkg_mgr == "dnf"
 
 - name: Probe br_netfilter Modules
   command: modprobe br_netfilter

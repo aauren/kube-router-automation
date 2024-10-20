@@ -9,7 +9,7 @@
 - name: Update sysctl
   command: sysctl --system
 
-- name: Install Standard Network Utils
+- name: Install Standard Network Utils (apt)
   apt:
     name:
       - iputils-ping
@@ -22,3 +22,19 @@
   until: apt_status is success
   delay: 6
   retries: 20
+  when: ansible_pkg_mgr == "apt"
+
+- name: Install Standard Network Utils (dnf)
+  dnf:
+    name:
+      - iputils
+      - dnsutils
+      - tcpdump
+      - iperf3
+      # This isn't available in rocky linux - ndisc6
+    update_cache: true
+  register: dnf_status
+  until: dnf_status is success
+  delay: 6
+  retries: 20
+  when: ansible_pkg_mgr == "dnf"
