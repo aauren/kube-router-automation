@@ -76,3 +76,18 @@ variable "ami_filter" {
     value = "ubuntu-minimal/images/hvm-ssd/ubuntu-jammy-*-amd64-minimal-*"
   }]
 }
+
+variable "ami_owners" {
+  type    = list(string)
+  default = ["amazon"]
+}
+
+variable "ami_default_user" {
+  type    = string
+  default = "ubuntu"
+}
+
+variable "ami_type" {
+  type    = string
+  default = "ubuntu"
+}

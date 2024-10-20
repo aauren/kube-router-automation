@@ -1,17 +1,17 @@
 Host aws-controller
   Hostname ${ controller }
-  User ubuntu
+  User ${ default_user }
   StrictHostKeyChecking no
   UserKnownHostsFile /dev/null
 
 Host aws-worker
   Hostname ${ worker }
-  User ubuntu
+  User ${ default_user }
   StrictHostKeyChecking no
   UserKnownHostsFile /dev/null
 
 Host aws-bgp
   Hostname ${ bgp }
-  User ubuntu
+  User ${ default_user }
   StrictHostKeyChecking no
   UserKnownHostsFile /dev/null

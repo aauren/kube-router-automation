@@ -73,7 +73,7 @@ locals {
 
 data "aws_ami" "amazon_linux" {
   most_recent = true
-  owners      = ["amazon"]
+  owners      = var.ami_owners
 
   dynamic "filter" {
     for_each = var.ami_filter
@@ -190,7 +190,7 @@ resource "aws_instance" "kube-controller" {
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
   ipv6_address_count          = 1
   associate_public_ip_address = true
-  user_data                   = file("${path.module}/configs/cloud_init.cfg")
+  user_data                   = templatefile("${path.module}/configs/cloud_init.cfg", { ami_type = var.ami_type })
   source_dest_check           = false
 
   root_block_device {
@@ -222,7 +222,7 @@ resource "aws_instance" "kube-worker" {
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
   ipv6_address_count          = 1
   associate_public_ip_address = true
-  user_data                   = file("${path.module}/configs/cloud_init.cfg")
+  user_data                   = templatefile("${path.module}/configs/cloud_init.cfg", { ami_type = var.ami_type })
   source_dest_check           = false
 
   root_block_device {
@@ -254,7 +254,7 @@ resource "aws_instance" "bgp-receiver" {
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
   ipv6_address_count          = 1
   associate_public_ip_address = true
-  user_data                   = file("${path.module}/configs/cloud_init.cfg")
+  user_data                   = templatefile("${path.module}/configs/cloud_init.cfg", { ami_type = var.ami_type })
   source_dest_check           = false
 
   root_block_device {
