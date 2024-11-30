@@ -3,7 +3,7 @@ terraform {
   required_providers {
     libvirt = {
       source  = "dmacvicar/libvirt"
-      version = "0.7.6"
+      version = "0.8.1"
     }
   }
 }
@@ -18,7 +18,9 @@ provider "libvirt" {
 resource "libvirt_pool" "kube-router-storage" {
   name = "kube-router-storage"
   type = "dir"
-  path = var.vm_pool_dir
+  target {
+    path = var.vm_pool_dir
+  }
 
   # We do this so that terraform doesn't repeatedly download the same image file which creates a lot of wasted time
   # and bandwidth. Also, this provider isn't capable of resizing the downloaded images, so the disks end up really
