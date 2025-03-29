@@ -46,13 +46,12 @@ nodeRegistration:
     # cloud-provider is currently deprecated and will likely need to be removed soon, for now, it still provides some
     # value in that it provides a special taint on the node until the cloud-controller has initialized the node
     cloud-provider: external
-{% else %}
-  {# In the case of EC2 we rely on the AWS cloud-provider to provide these options #}
-  {% if ipv6_enabled is defined %}
+{% endif %}
+{# In the case of EC2 we rely on the AWS cloud-provider to provide these options #}
+{% if ipv6_enabled is defined %}
     node-ip: {{ ansible_default_ipv4.address }},{{ ansible_default_ipv6.address }}
-  {% else %}
+{% else %}
     node-ip: {{ ansible_default_ipv4.address }}
-  {% endif %}
 {% endif %}
 # To see more options that could go here, see: https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#config-file
 # You can also see the default values with: kubeadm config print init-defaults
