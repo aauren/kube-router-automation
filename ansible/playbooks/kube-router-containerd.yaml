@@ -80,6 +80,13 @@
         source: "{{ node_ip_range.ipv6 }}"
         jump: MASQUERADE
       when: ipv6_enabled is defined and hostvars["aws-controller"] is not defined
+    - name: Add IPv4 Tables Foward Policy ACCEPT
+      iptables:
+        ip_version: ipv4
+        table: filter
+        chain: FORWARD
+        policy: ACCEPT
+      when: hostvars["aws-controller"] is not defined
 
 - name: Ensure Basic Host Config
   hosts: all
