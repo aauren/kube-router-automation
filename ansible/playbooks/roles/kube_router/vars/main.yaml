@@ -5,3 +5,7 @@
 # For having all features of kube-router enabled
 manifest:
   "https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter-all-features.yaml"
+kube_router_docker_repo:
+  cloudnativelabs/kube-router
+kube_router_version:
+  latest
