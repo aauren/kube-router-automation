@@ -21,7 +21,8 @@ variable "vm_pool_dir" {
 
 variable "root_password" {
   type    = string
-  default = "kube-router-linux"
+  # Set to kube-router-linux as a default
+  default = "$6$rounds=4096$z8UhmPX.GIZ4yoHj$bTPW4AVjVgLB9uD2jtRsaACuVMKbvC/E1jwC1.ur6ESUKWv2OsENjQO26Yg3tbNlprffSBn/E8xAg9mjj0CMd0"
 }
 
 variable "username" {
