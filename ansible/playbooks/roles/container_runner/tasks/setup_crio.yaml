@@ -69,7 +69,7 @@
     group: root
 
 - name: Start / Enable cri-o Service
-  systemd:
+  systemd_service:
     name: crio
     enabled: true
     state: started

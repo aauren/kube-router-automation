@@ -52,7 +52,7 @@
     mode: '0755'
 
 - name: Start / Enable containerd Service
-  systemd:
+  systemd_service:
     name: containerd
     enabled: true
     state: restarted

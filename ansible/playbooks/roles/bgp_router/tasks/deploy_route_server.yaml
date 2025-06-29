@@ -25,7 +25,7 @@
     dest: /etc/frr/frr.conf
 
 - name: Restart / Enable FRR Service
-  systemd:
+  systemd_service:
     name: frr
     enabled: true
     state: restarted
