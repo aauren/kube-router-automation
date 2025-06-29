@@ -39,3 +39,9 @@
   delay: 6
   retries: 20
   when: ansible_pkg_mgr == "dnf"
+
+- name: Disable Unattended apt Upgrades
+  apt:
+    name: unattended-upgrades
+    state: absent
+  when: ansible_pkg_mgr == "apt"
