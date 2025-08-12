@@ -41,6 +41,10 @@ finished with the resources so that you don't continue to get charged.
 
 * [Install Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
 * [Install Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+* Install required Ansible collections:
+  ```bash
+  ansible-galaxy collection install -r ansible/collections.yml
+  ```
 * For libvirt: Ensure that `wget` and `qemu-img` commands are installed and
   available on the host running terraform
 * For libvirt: Add the following to your `/etc/hosts` file so that the hosts are
