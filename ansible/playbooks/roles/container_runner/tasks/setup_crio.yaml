@@ -1,40 +1,76 @@
 ---
-
 # cri-o misses a lot of functionality, and podman appears to be used to subsidize it, so we install it here
 - name: Install podman
   package:
     name:
       - podman
 
-- name: Add libcontainers Repo Key (apt)
-  apt_key:
-    url:
-      "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ ubuntu_version }}/Release.key"
-    state: present
-  when: ansible_pkg_mgr == "apt"
+- name: Setup crio (apt)
+  block:
+    - name: Ubuntu <24.04 and <Debian Bookworm (12)
+      block:
+        - name: Add libcontainers Repo Key (apt)
+          apt_key:
+            url: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ ubuntu_version }}/Release.key"
+            state: present
 
-- name: Add libcontainers-crio Repo Key (apt)
-  apt_key:
-    url:
-      "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/\
-       {{ crio_version }}/{{ ubuntu_version }}/Release.key"
-    state: present
-  when: ansible_pkg_mgr == "apt"
+        - name: Add libcontainers-crio Repo Key (apt)
+          apt_key:
+            url:
+              "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/\
+              {{ crio_version }}/{{ ubuntu_version }}/Release.key"
+            state: present
 
-- name: Add libcontainers Repository (apt)
-  apt_repository:
-    repo: "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ ubuntu_version }}/ /"
-    state: present
-    filename: backports
-  when: ansible_pkg_mgr == "apt"
+        - name: Add libcontainers Repository (apt)
+          apt_repository:
+            repo: "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ ubuntu_version }}/ /"
+            state: present
+            filename: backports
 
-- name: Add libcontainers-crio Repository (apt)
-  apt_repository:
-    repo:
-      "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/\
-       {{ crio_version }}/{{ ubuntu_version }}/ /"
-    state: present
-    filename: backports
+        - name: Add libcontainers-crio Repository (apt)
+          apt_repository:
+            repo:
+              "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/\
+              {{ crio_version }}/{{ ubuntu_version }}/ /"
+            state: present
+            filename: backports
+
+        - name: Install cri-o Components (apt)
+          apt:
+            pkg:
+              - cri-o
+              - cri-o-runc
+              - containernetworking-plugins
+            update_cache: true
+
+      when:
+        - (ansible_distribution == "Ubuntu" and ansible_distribution_version is version('24.04', '<')) or
+          (ansible_distribution == "Debian" and ansible_distribution_version is version('12', '<'))
+
+    - name: Ubuntu >=24.04 and >=Debian Bookworm (12)
+      block:
+        - name: Add crio Repo Key (apt)
+          get_url:
+            url: "https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v{{ crio_version }}/deb/Release.key"
+            dest: /etc/apt/keyrings/cri-o-apt-keyring.asc
+            mode: "0644"
+
+        - name: Add crio Repository (apt)
+          apt_repository:
+            repo: "deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.asc] https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v{{ crio_version }}/deb/ /"
+            state: present
+            filename: backports
+
+        - name: Install cri-o Components (apt)
+          apt:
+            pkg:
+              - cri-o
+              - crun
+              - containernetworking-plugins
+            update_cache: true
+      when:
+        - (ansible_distribution == "Ubuntu" and ansible_distribution_version is version('24.04', '>=')) or
+          (ansible_distribution == "Debian" and ansible_distribution_version is version('12', '>='))
   when: ansible_pkg_mgr == "apt"
 
 - name: Add cri-o repos (dnf)
@@ -42,15 +78,6 @@
     src: templates/crio.repo.j2
     dest: /etc/yum.repos.d/pkgs.k8s.io_addons_cri-o_stable_v{{ crio_version }}_rpm_.repo
   when: ansible_pkg_mgr == "dnf"
-
-- name: Install cri-o Components (apt)
-  apt:
-    pkg:
-      - cri-o
-      - cri-o-runc
-      - containernetworking-plugins
-    update_cache: true
-  when: ansible_pkg_mgr == "apt"
 
 - name: Install cri-o Components (dnf)
   dnf:
@@ -64,7 +91,7 @@
   file:
     path: /var/lib/crio
     state: directory
-    mode: '0755'
+    mode: "0755"
     owner: root
     group: root
 
