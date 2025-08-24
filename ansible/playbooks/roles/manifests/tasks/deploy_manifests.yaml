@@ -1,7 +1,7 @@
 ---
 - name: Check if Local Manifests Directory Exists
   stat:
-    path: ../../../../../manifests/
+    path: "{{ playbook_dir }}/../../manifests"
   register: manifests_dir
   delegate_to: localhost
 
