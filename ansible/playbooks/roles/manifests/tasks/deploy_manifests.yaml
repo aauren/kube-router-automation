@@ -1,23 +1,32 @@
 ---
+- name: Check if Local Manifests Directory Exists
+  stat:
+    path: ../../../../../manifests/
+  register: manifests_dir
+  delegate_to: localhost
 
-- name: Create Manifest Dir
-  file:
-    path: "{{ ansible_env.HOME }}/misc_manifests"
-    state: directory
-    mode: '0750'
+- name: Deploy Manifests
+  block:
+    - name: Create Manifest Dir
+      file:
+        path: "{{ ansible_env.HOME }}/misc_manifests"
+        state: directory
+        mode: "0750"
 
-- name: Push Manifests to Leader
-  copy:
-    src: ../../../../../manifests/
-    dest: "{{ ansible_env.HOME }}/misc_manifests"
-    mode: '0640'
+    - name: Push Manifests to Leader
+      copy:
+        src: ../../../../../manifests/
+        dest: "{{ ansible_env.HOME }}/misc_manifests"
+        mode: "0640"
 
-- name: Find Manifest Files
-  find:
-    paths: "{{ ansible_env.HOME }}/misc_manifests"
-    patterns: "*.yaml,*.yml"
-  register: manifest_files
+    - name: Find Manifest Files
+      find:
+        paths: "{{ ansible_env.HOME }}/misc_manifests"
+        patterns: "*.yaml,*.yml"
+      register: manifest_files
 
-- name: Recursively Apply Manifests
-  command: kubectl apply -f {{ item.path }}
-  with_items: "{{ manifest_files.files }}"
+    - name: Recursively Apply Manifests
+      command: kubectl apply -f {{ item.path }}
+      with_items: "{{ manifest_files.files }}"
+
+  when: manifests_dir.stat.exists
