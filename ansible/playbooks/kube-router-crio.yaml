@@ -58,10 +58,16 @@
     - setup
     - checks
   tasks:
+    - name: Check for Hosts to be up via SSM
+      import_role:
+        name: common
+        tasks_from: wait_for_ssm
+      when: '"aws_ssm" in ansible_connection'
     - name: Check for Hosts to be up
       import_role:
         name: common
         tasks_from: wait_for_ssh
+      when: ansible_connection == "ssh"
 
 - name: Ensure IPv6 NAT Config
   hosts: localhost

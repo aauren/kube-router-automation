@@ -1,5 +1,4 @@
 ---
-
 - name: Find UID
   become: false
   command: id -u
@@ -30,7 +29,7 @@
   file:
     path: "{{ home.stdout }}/.kube"
     state: directory
-    mode: '0750'
+    mode: "0750"
     owner: "{{ user_id.stdout }}"
     group: "{{ group_id.stdout }}"
 
@@ -51,7 +50,7 @@
     # Because we used a loop command (even over just one host) we have to parse results to get to stdout
     src: "{{ home.stdout }}/.kube/config"
     dest: "{{ home.stdout }}/.kube/config.bak"
-    mode: '0600'
+    mode: "0600"
     owner: "{{ user_id.stdout }}"
     group: "{{ group_id.stdout }}"
   when: local_config_path.stat.exists
@@ -61,7 +60,7 @@
     # Because we used a loop command (even over just one host) we have to parse results to get to stdout
     content: "{{ kube_config['results'][0]['content'] | b64decode }}"
     dest: "{{ home.stdout }}/.kube/config"
-    mode: '0600'
+    mode: "0600"
     owner: "{{ user_id.stdout }}"
     group: "{{ group_id.stdout }}"
 
@@ -69,5 +68,5 @@
   replace:
     path: "{{ home.stdout }}/.kube/config"
     regexp: '{{ hostvars["aws-controller"].ansible_default_ipv4.address }}'
-    replace: '{{ hostvars["aws-controller"].ansible_host }}'
+    replace: '{{ hostvars["aws-controller"].ec2_public_ip if hostvars["aws-controller"].get("ec2_public_ip", "") != "" else hostvars["aws-controller"].ansible_host }}'
   when: hostvars["aws-controller"] is defined
