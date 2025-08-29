@@ -40,4 +40,5 @@ vars/*
 /manifests/*
 
 # Ignore aws inventories
-/ansible/inventory/aws.yaml
+/ansible/inventory/aws_ec2.yaml
+/ansible/inventory/group_vars/aws_ec2
