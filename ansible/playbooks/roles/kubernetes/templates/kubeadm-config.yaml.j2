@@ -9,6 +9,9 @@ apiServer:
     - "{{ ansible_default_ipv4.address }}"
     - "{{ ansible_default_ipv6.address }}"
     - "{{ ansible_host }}"
+{% if ec2_public_ip is defined and ec2_public_ip %}
+    - "{{ ec2_public_ip }}"
+{% endif %}
 #  extraArgs:
 #    feature-gates: NetworkPolicyEndPort=true
 networking:

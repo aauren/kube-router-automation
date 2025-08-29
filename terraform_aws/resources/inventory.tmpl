@@ -1,6 +1,41 @@
-aws-controller ansible_host=${ controller } ansible_user=${ default_user } ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_python_interpreter=/usr/bin/python3
-aws-worker ansible_host=${ worker } ansible_user=${ default_user } ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_python_interpreter=/usr/bin/python3
-aws-bgp ansible_host=${ bgp } ansible_user=${ default_user } ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_python_interpreter=/usr/bin/python3
+%{ if enable_ssm ~}
+plugin: amazon.aws.aws_ec2
+
+regions:
+  - ${region}
+
+compose:
+  ansible_host: instance_id
+  ansible_aws_ssm_instance_id: instance_id
+  ansible_aws_ssm_region: ${region}
+  ansible_aws_ssm_bucket_name: ${ansible_ssm_bucket_name}
+  ansible_python_interpreter: /usr/bin/python3
+  ec2_public_ip: public_ip_address | default('', true)
+
+filters:
+  tag:type:
+    - controller
+    - worker
+    - bgp
+  instance-state-name: running
+
+hostnames:
+  - tag:Name
+
+keyed_groups:
+  - key: tags.type
+    separator: ""
+
+groups:
+  container_runners: "tags.type == 'controller' or tags.type == 'worker'"
+  controllers: "tags.type == 'controller'" 
+  leader: "tags.type == 'controller'"
+  workers: "tags.type == 'worker'"
+  bgp_routers: "tags.type == 'bgp'"
+%{ else ~}
+aws-controller ansible_host=${controller} ansible_user=${default_user} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_python_interpreter=/usr/bin/python3
+aws-worker ansible_host=${worker} ansible_user=${default_user} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_python_interpreter=/usr/bin/python3
+aws-bgp ansible_host=${bgp} ansible_user=${default_user} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_python_interpreter=/usr/bin/python3
 
 [container_runners]
 aws-controller
@@ -17,3 +52,4 @@ aws-worker
 
 [bgp_routers]
 aws-bgp
+%{ endif ~}

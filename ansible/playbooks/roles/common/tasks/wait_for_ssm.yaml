@@ -1,0 +1,3 @@
+---
+- name: Wait for instance to be reachable via SSM
+  ansible.builtin.wait_for_connection:

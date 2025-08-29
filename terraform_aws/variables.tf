@@ -4,6 +4,11 @@ variable "aws_key_name" {
   default = ""
 }
 
+variable "enable_ssm" {
+  type    = bool
+  default = true
+}
+
 variable "region" {
   type    = string
   default = "us-west-2"
@@ -90,4 +95,9 @@ variable "ami_default_user" {
 variable "ami_type" {
   type    = string
   default = "ubuntu"
+}
+
+variable "ansible_ssm_bucket_name" {
+  type    = string
+  default = "kube-router-aws-ssm-ansible"
 }
