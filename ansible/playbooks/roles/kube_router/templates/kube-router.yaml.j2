@@ -50,9 +50,9 @@ spec:
       containers:
       - name: kube-router
         {%- if kube_router_version is defined %}
-        image: docker.io/{{ kube_router_docker_repo }}:{{ kube_router_version }}
+        image: {{ kube_router_docker_repo }}:{{ kube_router_version }}
         {%- else %}
-        image: docker.io/{{ kube_router_docker_repo }}
+        image: {{ kube_router_docker_repo }}
         {%- endif %}
         imagePullPolicy: Always
         args:
