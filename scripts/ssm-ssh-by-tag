@@ -1,0 +1,187 @@
+#!/bin/bash
+
+# ==============================================================================
+# Script: ssm-ssh-by-tag.sh
+# Description: Connects to an AWS EC2 instance via AWS Systems Manager (SSM)
+#              Session Manager, using SSH port forwarding. Instances are
+#              identified based on their AWS tags.
+#
+# Usage:
+#   1. Argument Mode:
+#      Provide tag key-value pairs directly as command-line arguments.
+#      Example: ./ssm-ssh-by-tag.sh Environment=production Name=webserver-01
+#      You can provide one or more "Key=Value" pairs.
+#
+#   2. Interactive Mode:
+#      Run the script without any arguments. It will then query your AWS
+#      account for available tag keys on running EC2 instances, prompt you
+#      to select a key, and then prompt for a value for that key.
+#      Example: ./ssm-ssh-by-tag.sh
+#
+# Prerequisites:
+#   - AWS CLI installed and configured with appropriate credentials.
+#   - Session Manager plugin for the AWS CLI installed.
+#   - SSM Agent installed and running on the target EC2 instance (v3.1.1374.0+).
+#   - IAM instance profile attached to the EC2 instance with SSM permissions.
+#   - Your IAM user/role has permissions for `ec2:DescribeInstances` and
+#     `ssm:StartSession`.
+#
+# Output:
+#   Initiates an interactive SSH session to the selected EC2 instance.
+# ==============================================================================
+
+# Global array to store tag filters
+declare -a TAG_FILTERS
+# Global string for EC2 describe-instances filters
+FULL_FILTERS=""
+
+# Function to display error and exit
+error_exit() {
+	echo "Error: ${1}" >&2
+	exit 1
+}
+
+# Function to parse command-line arguments for tags
+parse_arguments_for_tags() {
+	echo "Processing tags provided as arguments..."
+	for arg in "${@}"; do
+		if [[ "${arg}" =~ ^([^=]+)=(.+)$ ]]; then
+			local TAG_KEY="${BASH_REMATCH[1]}"
+			local TAG_VALUE="${BASH_REMATCH[2]}"
+			TAG_FILTERS+=("Name=tag:${TAG_KEY},Values=${TAG_VALUE}")
+		else
+			error_exit "Invalid argument format: '${arg}'. Expected Key=Value."
+		fi
+	done
+}
+
+# Function to get unique tag keys from running instances
+get_unique_tag_keys() {
+	aws ec2 describe-instances \
+		--filters "Name=instance-state-name,Values=running" \
+		--query "Reservations[*].Instances[*].Tags[?Key!=null].Key" \
+		--output text 2>/dev/null | tr '\t' '\n' | sort -u
+}
+
+# Function to get unique tag values for a given key from running instances
+get_unique_tag_values() {
+	local tag_key="${1}"
+	aws ec2 describe-instances \
+		--filters "Name=instance-state-name,Values=running" "Name=tag-key,Values=${tag_key}" \
+		--query "Reservations[*].Instances[*].Tags[?Key=='${tag_key}'].Value" \
+		--output text 2>/dev/null | tr '\t' '\n' | sort -u
+}
+
+# Generic function to prompt user for selection from an array
+prompt_for_selection() {
+	local prompt_message="${1}"
+	shift
+	local options_array=("${@}")
+	local selected_item=""
+
+	echo "" >&2
+	echo "${prompt_message}" >&2
+	select item in "${options_array[@]}"; do
+		if [[ -n "${item}" ]]; then
+			selected_item="${item}"
+			break
+		else
+			echo "Invalid selection. Please try again." >&2
+		fi
+	done
+	echo "${selected_item}" # Return the selected item
+}
+
+# Function to handle interactive tag selection
+interactively_select_tags() {
+	echo "No tags provided as arguments. Entering interactive tag selection."
+
+	# 1. Get and select Tag Key
+	echo "Fetching available tag keys from running EC2 instances..."
+	local all_tag_keys_str="$(get_unique_tag_keys)"
+	if [ -z "${all_tag_keys_str}" ]; then
+		error_exit "No tags found on any running EC2 instances in this account/region. Please ensure instances are running and have tags."
+	fi
+	IFS=$'\n' read -r -d '' -a TAG_KEY_ARRAY <<< "${all_tag_keys_str}"
+	local selected_tag_key="$(prompt_for_selection "Available Tag Keys:" "${TAG_KEY_ARRAY[@]}")"
+	echo "Selected Tag Key: ${selected_tag_key}"
+
+	# 2. Get and select Tag Value
+	echo "Fetching available tag values for key '${selected_tag_key}' from running EC2 instances..."
+	local all_tag_values_str="$(get_unique_tag_values "${selected_tag_key}")"
+	if [ -z "${all_tag_values_str}" ]; then
+		error_exit "No values found for tag key '${selected_tag_key}' on any running EC2 instances."
+	fi
+	IFS=$'\n' read -r -d '' -a TAG_VALUE_ARRAY <<< "${all_tag_values_str}"
+	local selected_tag_value="$(prompt_for_selection "Available Tag Values for '${selected_tag_key}':" "${TAG_VALUE_ARRAY[@]}")"
+	echo "Selected Tag Value: ${selected_tag_value}"
+
+	TAG_FILTERS+=( "Name=tag:${selected_tag_key},Values=${selected_tag_value}" )
+}
+
+# Function to find instance IDs based on the constructed filters
+find_instance_ids_by_tags() {
+	echo "" >&2
+	echo "Searching for running instances with the specified tags..." >&2
+	echo Running search: aws ec2 describe-instances --filters "${TAG_FILTERS[*]}" \
+		--query "Reservations[*].Instances[*].InstanceId" \
+		--output text >&2
+	aws ec2 describe-instances --filters ${TAG_FILTERS[*]} \
+		--query "Reservations[*].Instances[*].InstanceId" \
+		--output text 2>/dev/null
+}
+
+# Function to select a target instance from a list of IDs
+select_target_instance() {
+	local instance_ids_str="${1}"
+	local selected_instance_id=""
+
+	IFS=$'\n' read -r -d '' -a INSTANCE_ARRAY <<< "${instance_ids_str}"
+
+	if [ ${#INSTANCE_ARRAY[@]} -gt 1 ]; then
+		echo ""
+		echo "Multiple instances found. Please select one to connect to:"
+		selected_instance_id="$(prompt_for_selection "Instances:" "${INSTANCE_ARRAY[@]}")"
+	else
+		selected_instance_id="${INSTANCE_ARRAY[0]}"
+	fi
+	echo "${selected_instance_id}" # Return the selected instance ID
+}
+
+# Function to start the SSM SSH session
+start_ssm_ssh_session() {
+	local instance_id="${1}"
+	echo "Starting SSM SSH session to instance ${instance_id} on port 22..."
+	ssh -o "ProxyCommand aws ssm start-session \
+		--target "${instance_id}" \
+		--document-name AWS-StartSSHSession" \
+		"ubuntu@${instance_id}"
+}
+
+# Main script execution
+main() {
+	if [ "$#" -gt 0 ]; then
+		parse_arguments_for_tags "${@}"
+	else
+		interactively_select_tags
+	fi
+
+	# Always filter for running instances
+	TAG_FILTERS+=("Name=instance-state-name,Values=running")
+
+	local instance_ids_found="$(find_instance_ids_by_tags)"
+	if [ -z "${instance_ids_found}" ]; then
+		error_exit "No running instances found matching the specified tags."
+	else
+		printf "%s instance(s) found" "${instance_ids_found}"
+	fi
+
+	local target_instance_id="$(select_target_instance "${instance_ids_found}")"
+	echo "Connecting to ${target_instance_id}..."
+
+	start_ssm_ssh_session "${target_instance_id}"
+}
+
+# Call the main function
+main "${@}"
+
