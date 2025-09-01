@@ -158,7 +158,7 @@ This is the image that you wish to use as your base Ubuntu image for running kub
 
 * **aws_key_name** - NO_DEFAULT_SET - The SSH key name in AWS that you want to
   use for logging into the instances
-* enable_ssm - true - If true, the Ansible inventory file will be generated
+* **enable_ssm** - true - If true, the Ansible inventory file will be generated
   to connect to AWS instances using SSM. If false, then SSH will be used.
 * **region** - `us-west-2` - The AWS region that you are deploying into
 * **name** - `kube-router` - The default name to use for AWS tags and instances
