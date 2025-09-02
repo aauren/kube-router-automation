@@ -87,10 +87,6 @@ resource "aws_iam_role" "control-plane-role" {
   path = "/"
 
   assume_role_policy = data.aws_iam_policy_document.asg-assume-role-pol-document.json
-
-  managed_policy_arns = [
-    aws_iam_policy.control-plane-policy.arn
-  ]
 }
 
 resource "aws_iam_role" "worker-role" {
@@ -98,10 +94,6 @@ resource "aws_iam_role" "worker-role" {
   path = "/"
 
   assume_role_policy = data.aws_iam_policy_document.asg-assume-role-pol-document.json
-
-  managed_policy_arns = [
-    aws_iam_policy.worker-policy.arn
-  ]
 }
 
 resource "aws_iam_instance_profile" "control-plane-profile" {
@@ -112,4 +104,14 @@ resource "aws_iam_instance_profile" "control-plane-profile" {
 resource "aws_iam_instance_profile" "worker-profile" {
   name = "${var.name}-worker-profile"
   role = aws_iam_role.worker-role.name
+}
+
+resource "aws_iam_role_policy_attachment" "control-plane-policy-attachment" {
+  role       = aws_iam_role.control-plane-role.name
+  policy_arn = aws_iam_policy.control-plane-policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "worker-policy-attachment" {
+  role       = aws_iam_role.worker-role.name
+  policy_arn = aws_iam_policy.worker-policy.arn
 }
