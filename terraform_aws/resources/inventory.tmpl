@@ -7,9 +7,6 @@ regions:
 compose:
   ansible_host: instance_id
   ansible_aws_ssm_instance_id: instance_id
-  ansible_aws_ssm_region: ${region}
-  ansible_aws_ssm_bucket_name: ${ansible_ssm_bucket_name}
-  ansible_python_interpreter: /usr/bin/python3
   ec2_public_ip: public_ip_address | default('', true)
 
 filters:
