@@ -7,7 +7,7 @@ resource "local_file" "ansible_inventory" {
       default_user = var.ami_default_user
       enable_ssm   = var.enable_ssm
       region       = var.region
-      worker       = aws_instance.kube-worker.public_ip
+      workers      = aws_instance.kube-worker[*].public_ip
     }
   )
   filename = "../ansible/inventory/aws_ec2.yaml"

@@ -69,6 +69,11 @@ variable "kube_worker_disk_size" {
   default = 50
 }
 
+variable "kube_worker_count" {
+  type    = number
+  default = 1
+}
+
 variable "bgp_receiver_disk_size" {
   type    = number
   default = 10

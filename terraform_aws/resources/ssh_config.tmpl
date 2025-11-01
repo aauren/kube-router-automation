@@ -4,11 +4,13 @@ Host aws-controller
   StrictHostKeyChecking no
   UserKnownHostsFile /dev/null
 
-Host aws-worker
+%{ for idx, worker in workers ~}
+Host aws-worker-${idx}
   Hostname ${ worker }
   User ${ default_user }
   StrictHostKeyChecking no
   UserKnownHostsFile /dev/null
+%{ endfor ~}
 
 Host aws-bgp
   Hostname ${ bgp }
