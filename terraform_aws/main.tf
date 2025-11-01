@@ -48,7 +48,6 @@ locals {
       }
       ssm_enabled = var.enable_ssm
       tags = {
-        Name = "aws-worker"
         type = "worker"
       }
     }
@@ -216,6 +215,8 @@ resource "aws_instance" "kube-worker" {
     aws_iam_instance_profile.worker-profile
   ]
 
+  count = var.kube_worker_count
+
   ami                         = data.aws_ami.amazon_linux.id
   instance_type               = local.multiple_instances.worker.instance_type
   key_name                    = var.aws_key_name
@@ -237,6 +238,7 @@ resource "aws_instance" "kube-worker" {
   tags = merge(
     { "DeploymentGroup" = var.name },
     { "kubernetes.io/cluster/${var.name}" = "owned" },
+    { "Name" = "aws-worker-${count.index}" },
     var.tags,
     local.multiple_instances.worker.tags
   )

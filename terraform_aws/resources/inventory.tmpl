@@ -31,12 +31,16 @@ groups:
   bgp_routers: "tags.type == 'bgp'"
 %{ else ~}
 aws-controller ansible_host=${controller} ansible_user=${default_user} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_python_interpreter=/usr/bin/python3
-aws-worker ansible_host=${worker} ansible_user=${default_user} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_python_interpreter=/usr/bin/python3
+%{ for idx, worker in workers ~}
+aws-worker-${idx} ansible_host=${worker} ansible_user=${default_user} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_python_interpreter=/usr/bin/python3
+%{ endfor ~}
 aws-bgp ansible_host=${bgp} ansible_user=${default_user} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_python_interpreter=/usr/bin/python3
 
 [container_runners]
 aws-controller
-aws-worker
+%{ for idx, worker in workers ~}
+aws-worker-${idx}
+%{ endfor ~}
 
 [controllers]
 aws-controller
@@ -45,7 +49,9 @@ aws-controller
 aws-controller
 
 [workers]
-aws-worker
+%{ for idx, worker in workers ~}
+aws-worker-${idx}
+%{ endfor ~}
 
 [bgp_routers]
 aws-bgp
