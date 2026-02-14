@@ -123,11 +123,16 @@ interactively_select_tags() {
 find_instance_ids_by_tags() {
 	echo "" >&2
 	echo "Searching for running instances with the specified tags..." >&2
-	echo Running search: aws ec2 describe-instances --filters "${TAG_FILTERS[*]}" \
+	aws ec2 describe-instances --filters "${TAG_FILTERS[@]}" \
 		--query "Reservations[*].Instances[*].InstanceId" \
-		--output text >&2
-	aws ec2 describe-instances --filters ${TAG_FILTERS[*]} \
-		--query "Reservations[*].Instances[*].InstanceId" \
+		--output text 2>/dev/null | tr '\t' '\n' | grep -v '^$'
+}
+
+# Function to get instance name from ID
+get_instance_name() {
+	local instance_id="${1}"
+	aws ec2 describe-instances --instance-ids "${instance_id}" \
+		--query "Reservations[*].Instances[*].Tags[?Key=='Name'].Value" \
 		--output text 2>/dev/null
 }
 
@@ -139,9 +144,33 @@ select_target_instance() {
 	IFS=$'\n' read -r -d '' -a INSTANCE_ARRAY <<< "${instance_ids_str}"
 
 	if [ ${#INSTANCE_ARRAY[@]} -gt 1 ]; then
-		echo ""
-		echo "Multiple instances found. Please select one to connect to:"
-		selected_instance_id="$(prompt_for_selection "Instances:" "${INSTANCE_ARRAY[@]}")"
+		echo "" >&2
+		echo "Multiple instances found. Please select one to connect to:" >&2
+
+		# Build display array with names
+		local -a DISPLAY_ARRAY
+		local -a ID_MAP
+		for instance_id in "${INSTANCE_ARRAY[@]}"; do
+			local instance_name="$(get_instance_name "${instance_id}")"
+			if [ -n "${instance_name}" ]; then
+				DISPLAY_ARRAY+=("${instance_name} (${instance_id})")
+			else
+				DISPLAY_ARRAY+=("${instance_id}")
+			fi
+			ID_MAP+=("${instance_id}")
+		done
+
+		# Prompt user to select
+		local selection_index
+		select item in "${DISPLAY_ARRAY[@]}"; do
+			if [[ -n "${item}" ]]; then
+				selection_index=$((REPLY - 1))
+				selected_instance_id="${ID_MAP[${selection_index}]}"
+				break
+			else
+				echo "Invalid selection. Please try again." >&2
+			fi
+		done
 	else
 		selected_instance_id="${INSTANCE_ARRAY[0]}"
 	fi
