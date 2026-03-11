@@ -21,7 +21,7 @@ ansible_aws_ssm_document: ${aws_ssm_document.ssm_default_user[0].name}
 ansible_aws_ssm_region: ${var.region}
 ansible_become_method: sudo
 ansible_become_user: root
-ansible_connection: "community.aws.aws_ssm"
+ansible_connection: "amazon.aws.aws_ssm"
 ansible_python_interpreter: /usr/bin/python3
 ansible_user: ${var.ami_default_user}
 EOF
