@@ -10,7 +10,7 @@ discovery:
     - "{{ ca_hash }}"
 nodeRegistration:
   kubeletExtraArgs:
-{% if ansible_system_vendor == "Amazon EC2" %}
+{% if ansible_facts['system_vendor'] == "Amazon EC2" %}
     # node-ip isn't supported when using a cloud provider
     # cloud-provider is currently deprecated and will likely need to be removed soon, for now, it still provides some
     # value in that it provides a special taint on the node until the cloud-controller has initialized the node
@@ -18,7 +18,7 @@ nodeRegistration:
 {% endif %}
 {# In the case of EC2 we rely on the AWS cloud-provider to provide these options #}
 {% if ipv6_enabled is defined %}
-    node-ip: {{ ansible_default_ipv4.address }},{{ ansible_default_ipv6.address }}
+    node-ip: {{ ansible_facts['default_ipv4'].address }},{{ ansible_facts['default_ipv6'].address }}
 {% else %}
-    node-ip: {{ ansible_default_ipv4.address }}
+    node-ip: {{ ansible_facts['default_ipv4'].address }}
 {% endif %}

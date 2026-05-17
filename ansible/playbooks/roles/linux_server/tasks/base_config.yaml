@@ -23,7 +23,7 @@
   until: apt_status is success
   delay: 6
   retries: 20
-  when: ansible_pkg_mgr == "apt"
+  when: ansible_facts['pkg_mgr'] == "apt"
 
 - name: Install Standard Network Utils (dnf)
   dnf:
@@ -38,10 +38,10 @@
   until: dnf_status is success
   delay: 6
   retries: 20
-  when: ansible_pkg_mgr == "dnf"
+  when: ansible_facts['pkg_mgr'] == "dnf"
 
 - name: Disable Unattended apt Upgrades
   apt:
     name: unattended-upgrades
     state: absent
-  when: ansible_pkg_mgr == "apt"
+  when: ansible_facts['pkg_mgr'] == "apt"

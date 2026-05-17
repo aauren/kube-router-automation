@@ -2,28 +2,28 @@
 
 - name: Create Manifest Dir
   file:
-    path: "{{ ansible_env.HOME }}/manifests"
+    path: "{{ ansible_facts['env'].HOME }}/manifests"
     state: directory
     mode: '0750'
 
 - name: Copy AWS manifests
   copy:
     src: ../files/
-    dest: "{{ ansible_env.HOME }}/manifests"
+    dest: "{{ ansible_facts['env'].HOME }}/manifests"
     mode: '0640'
 
 - name: Generate AWS cloud-config ConfigMap
   template:
     src: templates/aws_provider_configmap.yaml.j2
-    dest: "{{ ansible_env.HOME }}/manifests/aws_provider_configmap.yaml"
+    dest: "{{ ansible_facts['env'].HOME }}/manifests/aws_provider_configmap.yaml"
 
 - name: Generate AWS cloud-config daemonset
   template:
     src: templates/aws_provider_daemonset.yaml.j2
-    dest: "{{ ansible_env.HOME }}/manifests/aws_provider_manager_daemonset.yaml"
+    dest: "{{ ansible_facts['env'].HOME }}/manifests/aws_provider_manager_daemonset.yaml"
 
 - name: Concatenate Manifests
-  shell: "cat {{ ansible_env.HOME }}/manifests/aws_provider_*.yaml > {{ ansible_env.HOME }}/manifests/aws_all.yaml"
+  shell: "cat {{ ansible_facts['env'].HOME }}/manifests/aws_provider_*.yaml > {{ ansible_facts['env'].HOME }}/manifests/aws_all.yaml"
 
 - name: Deploy AWS Provider Service Account Manifest
-  command: kubectl apply -f {{ ansible_env.HOME }}/manifests/aws_all.yaml
+  command: kubectl apply -f {{ ansible_facts['env'].HOME }}/manifests/aws_all.yaml

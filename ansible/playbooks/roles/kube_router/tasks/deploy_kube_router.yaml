@@ -17,20 +17,20 @@
 
 - name: Create Manifest Dir
   file:
-    path: "{{ ansible_env.HOME }}/manifests"
+    path: "{{ ansible_facts['env'].HOME }}/manifests"
     state: directory
     mode: '0750'
 
 - name: Get kube-router Manifest from Upstream
   get_url:
     url: "{{ manifest }}"
-    dest: "{{ ansible_env.HOME }}/manifests/kube-router.yaml"
+    dest: "{{ ansible_facts['env'].HOME }}/manifests/kube-router.yaml"
   when: file_manifest is not defined and deploy_from_local_template is not defined
 
 - name: Send Local kube-router Manifest to Remote
   copy:
     src: "{{ file_manifest }}"
-    dest: "{{ ansible_env.HOME }}/manifests/kube-router.yaml"
+    dest: "{{ ansible_facts['env'].HOME }}/manifests/kube-router.yaml"
   when: file_manifest is defined and deploy_from_local_template is not defined
 
 # This is needed because by default this is a new play and we don't have facts for anything other than the kubernetes
@@ -43,17 +43,17 @@
 
 - name: Set BGP Peer IPs
   set_fact:
-    bgp_peer_ips: "{{ hostvars[item].ansible_default_ipv4.address }}"
+    bgp_peer_ips: "{{ hostvars[item].ansible_facts['default_ipv4'].address }}"
   loop: "{{ groups['bgp_routers'] }}"
 
 - name: Render Local kube-router Manifest to Remote
   template:
     src: templates/kube-router.yaml.j2
-    dest: "{{ ansible_env.HOME }}/manifests/kube-router.yaml"
+    dest: "{{ ansible_facts['env'].HOME }}/manifests/kube-router.yaml"
   when: file_manifest is not defined and deploy_from_local_template is defined
 
 - name: Deploy kube-router Manifest
-  command: kubectl apply -f {{ ansible_env.HOME }}/manifests/kube-router.yaml
+  command: kubectl apply -f {{ ansible_facts['env'].HOME }}/manifests/kube-router.yaml
 
 - name: Remove kube-proxy
   command: kubectl -n kube-system delete daemonset kube-proxy

@@ -13,19 +13,19 @@
 - name: Push Container .tar to Worker
   copy:
     src: "{{ repo_path }}/kube-router.tar"
-    dest: "{{ ansible_env.HOME }}"
+    dest: "{{ ansible_facts['env'].HOME }}"
     mode: '0640'
 
 - name: Add Image to Containerd
   become: true
   shell:
-    cmd: ctr --namespace k8s.io image import {{ ansible_env.HOME }}/kube-router.tar
+    cmd: ctr --namespace k8s.io image import {{ ansible_facts['env'].HOME }}/kube-router.tar
   when: cri == "containerd"
 
 - name: Add Image to Cri-o
   become: true
   shell:
-    cmd: podman load -i {{ ansible_env.HOME }}/kube-router.tar
+    cmd: podman load -i {{ ansible_facts['env'].HOME }}/kube-router.tar
   register: container_load_out
   when: cri == "crio"
 
@@ -44,10 +44,10 @@
 - name: Add Image to Docker
   become: true
   shell:
-    cmd: docker load -i {{ ansible_env.HOME }}/kube-router.tar
+    cmd: docker load -i {{ ansible_facts['env'].HOME }}/kube-router.tar
   when: cri == "docker"
 
 - name: Remove kube-router .tar From Remote Host
   file:
-    path: "{{ ansible_env.HOME }}/kube-router.tar"
+    path: "{{ ansible_facts['env'].HOME }}/kube-router.tar"
     state: absent

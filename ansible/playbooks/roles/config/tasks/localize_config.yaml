@@ -67,6 +67,6 @@
 - name: Replace internal IP with external IP
   replace:
     path: "{{ home.stdout }}/.kube/config"
-    regexp: '{{ hostvars["aws-controller"].ansible_default_ipv4.address }}'
+    regexp: '{{ hostvars["aws-controller"].ansible_facts["default_ipv4"].address }}'
     replace: '{{ hostvars["aws-controller"].ec2_public_ip if hostvars["aws-controller"].get("ec2_public_ip", "") != "" else hostvars["aws-controller"].ansible_host }}'
   when: hostvars["aws-controller"] is defined

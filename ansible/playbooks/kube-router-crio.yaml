@@ -159,7 +159,7 @@
       import_role:
         name: aws
         tasks_from: install_provider
-      when: ansible_system_vendor == "Amazon EC2"
+      when: ansible_facts['system_vendor'] == "Amazon EC2"
 
 - name: Join Cluster with Remaining Nodes
   hosts: workers
