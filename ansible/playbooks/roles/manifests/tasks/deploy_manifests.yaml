@@ -9,19 +9,19 @@
   block:
     - name: Create Manifest Dir
       file:
-        path: "{{ ansible_env.HOME }}/misc_manifests"
+        path: "{{ ansible_facts['env'].HOME }}/misc_manifests"
         state: directory
         mode: "0750"
 
     - name: Push Manifests to Leader
       copy:
         src: ../../../../../manifests/
-        dest: "{{ ansible_env.HOME }}/misc_manifests"
+        dest: "{{ ansible_facts['env'].HOME }}/misc_manifests"
         mode: "0640"
 
     - name: Find Manifest Files
       find:
-        paths: "{{ ansible_env.HOME }}/misc_manifests"
+        paths: "{{ ansible_facts['env'].HOME }}/misc_manifests"
         patterns: "*.yaml,*.yml"
       register: manifest_files
 

@@ -14,9 +14,9 @@
 - name: Render Local Change Image Patch
   template:
     src: templates/change_image.yaml.j2
-    dest: "{{ ansible_env.HOME }}/manifests/kube-router-image-patch.yaml"
+    dest: "{{ ansible_facts['env'].HOME }}/manifests/kube-router-image-patch.yaml"
 
 - name: Patch kube-router
   command: |
     kubectl patch daemonset -n kube-system kube-router \
-    --patch-file {{ ansible_env.HOME }}/manifests/kube-router-image-patch.yaml
+    --patch-file {{ ansible_facts['env'].HOME }}/manifests/kube-router-image-patch.yaml

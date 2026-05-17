@@ -44,8 +44,8 @@
             update_cache: true
 
       when:
-        - (ansible_distribution == "Ubuntu" and ansible_distribution_version is version('24.04', '<')) or
-          (ansible_distribution == "Debian" and ansible_distribution_version is version('12', '<'))
+        - (ansible_facts['distribution'] == "Ubuntu" and ansible_facts['distribution_version'] is version('24.04', '<')) or
+          (ansible_facts['distribution'] == "Debian" and ansible_facts['distribution_version'] is version('12', '<'))
 
     - name: Ubuntu >=24.04 and >=Debian Bookworm (12)
       block:
@@ -69,15 +69,15 @@
               - containernetworking-plugins
             update_cache: true
       when:
-        - (ansible_distribution == "Ubuntu" and ansible_distribution_version is version('24.04', '>=')) or
-          (ansible_distribution == "Debian" and ansible_distribution_version is version('12', '>='))
-  when: ansible_pkg_mgr == "apt"
+        - (ansible_facts['distribution'] == "Ubuntu" and ansible_facts['distribution_version'] is version('24.04', '>=')) or
+          (ansible_facts['distribution'] == "Debian" and ansible_facts['distribution_version'] is version('12', '>='))
+  when: ansible_facts['pkg_mgr'] == "apt"
 
 - name: Add cri-o repos (dnf)
   template:
     src: templates/crio.repo.j2
     dest: /etc/yum.repos.d/pkgs.k8s.io_addons_cri-o_stable_v{{ crio_version }}_rpm_.repo
-  when: ansible_pkg_mgr == "dnf"
+  when: ansible_facts['pkg_mgr'] == "dnf"
 
 - name: Install cri-o Components (dnf)
   dnf:
@@ -85,7 +85,7 @@
       - cri-o
       - containernetworking-plugins
     update_cache: true
-  when: ansible_pkg_mgr == "dnf"
+  when: ansible_facts['pkg_mgr'] == "dnf"
 
 - name: Create cri-o /var/lib Dir
   file:
