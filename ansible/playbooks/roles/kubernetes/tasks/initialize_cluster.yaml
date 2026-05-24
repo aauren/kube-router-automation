@@ -20,10 +20,6 @@
   shell: kubelet --version | awk '{print $2}'
   register: kubernetes_version
 
-- name: Get EC2 Metadata when running in Amazon
-  ec2_metadata_facts:
-  when: ansible_facts['system_vendor'] == "Amazon EC2"
-
 - name: Generate kubeadm Config
   template:
     src: templates/kubeadm-config.yaml.j2
