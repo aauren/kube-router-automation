@@ -20,15 +20,15 @@ hostnames:
   - tag:Name
 
 keyed_groups:
-  - key: tags.type
+  - key: ec2_tags.type
     separator: ""
 
 groups:
-  container_runners: "tags.type == 'controller' or tags.type == 'worker'"
-  controllers: "tags.type == 'controller'" 
-  leader: "tags.type == 'controller'"
-  workers: "tags.type == 'worker'"
-  bgp_routers: "tags.type == 'bgp'"
+  container_runners: "ec2_tags.type == 'controller' or ec2_tags.type == 'worker'"
+  controllers: "ec2_tags.type == 'controller'"
+  leader: "ec2_tags.type == 'controller'"
+  workers: "ec2_tags.type == 'worker'"
+  bgp_routers: "ec2_tags.type == 'bgp'"
 %{ else ~}
 aws-controller ansible_host=${controller} ansible_user=${default_user} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_python_interpreter=/usr/bin/python3
 %{ for idx, worker in workers ~}
