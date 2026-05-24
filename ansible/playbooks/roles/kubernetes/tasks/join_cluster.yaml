@@ -56,10 +56,6 @@
     ca_hash: "{{ join_command.split(' ')[6] }}"
   when: kube_status.rc != 0
 
-- name: Get EC2 Metadata when running in Amazon
-  ec2_metadata_facts:
-  when: ansible_facts['system_vendor'] == "Amazon EC2"
-
 - name: Template kubeadm Node JoinConfiguration
   template:
     src: templates/kubeadm-config-node.yaml.j2
