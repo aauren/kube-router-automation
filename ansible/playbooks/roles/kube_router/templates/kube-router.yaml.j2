@@ -47,6 +47,10 @@ spec:
       priorityClassName: system-node-critical
       serviceAccountName: kube-router
       serviceAccount: kube-router
+      {%- if kube_router_image_pull_secret %}
+      imagePullSecrets:
+        - name: {{ kube_router_image_pull_secret }}
+      {%- endif %}
       containers:
       - name: kube-router
         {%- if kube_router_version is defined %}
@@ -84,6 +88,9 @@ spec:
         - --loadbalancer-ip-range={{ loadbalancer_ip_range.ipv6 }}
         {%- endif %}
         - --loadbalancer-ip-range={{ loadbalancer_ip_range.ipv4 }}
+        {%- endif %}
+        {%- if enable_bfd | bool %}
+        - --enable-bfd
         {%- endif %}
         - --service-external-ip-range={{ external_ip_range.ipv4 }}
         - --advertise-external-ip=true
