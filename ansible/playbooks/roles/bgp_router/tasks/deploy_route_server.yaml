@@ -1,5 +1,4 @@
 ---
-
 - name: Ensure syslog User Exists
   user:
     name: syslog
@@ -14,8 +13,15 @@
 - name: Enable BGP Daemon in FRR
   lineinfile:
     path: /etc/frr/daemons
-    regexp: '^bgpd'
+    regexp: "^bgpd"
     line: bgpd=yes
+
+- name: Enable BFD Daemon in FRR
+  lineinfile:
+    path: /etc/frr/daemons
+    regexp: "^bfdd"
+    line: bfdd=yes
+  when: enable_bfd | bool
 
 - name: Template FRR Configuration File
   vars:
