@@ -47,7 +47,7 @@ spec:
       priorityClassName: system-node-critical
       serviceAccountName: kube-router
       serviceAccount: kube-router
-      {%- if kube_router_image_pull_secret %}
+      {%- if kube_router_image_pull_secret | default('') %}
       imagePullSecrets:
         - name: {{ kube_router_image_pull_secret }}
       {%- endif %}
