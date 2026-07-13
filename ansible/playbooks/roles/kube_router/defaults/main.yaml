@@ -1,0 +1,6 @@
+---
+# Name of an imagePullSecret to attach to the kube-router pods, for pulling the
+# image from a private registry.
+kube_router_image_pull_secret: ""
+# Whether or not to enable BFD routing capabilities
+enable_bfd: false

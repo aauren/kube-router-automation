@@ -11,11 +11,14 @@
 #   - bgp_asn: Allows you to set the default BGP ASN that kube-router and FRR will use (default: 4200000001)
 #   - bgp_router_enabled: Enables / Disables peering kube-router with BGP route server for testing announced IPs
 #     (default: true)
+#   - enable_bfd: controls enabling BFD features
 #   - external_ip_range: Allows you to set the allowed External IP range for kube-router to use (default: 10.243.0.0/24)
 #   - file_manifest: Allows you to specify a path to a kube-router manifest from file rather than Ansible downloading
 #     it from upstream (default: blank)
 #   - ipv6_enabled: Enable IPv6 functionality, sets default IPv6 ranges that can be overridden in vars
 #   - kube_proxy_replacement: Allows you to enable / disable kube_proxy_replacement mode (default: true)
+#   - kube_router_image_pull_secret: For pulling kube-router's container image from a container registry that requires a
+#     password
 #   - kube_router_version: Allows you to override the container tag of kube-router
 #   - kubernetes_version: Allows you to specify the version of k8s you're installing (default: v1.30)
 #   - loadbalancer_enabled: Enable loadbalancer functionality, sets default loadbalancer ranges that can be overridden
