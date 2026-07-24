@@ -18,6 +18,7 @@ data:
              "type":"bridge",
              "bridge":"kube-bridge",
              "isDefaultGateway":true,
+             "hairpinMode":true,
              "ipam":{
                 "type":"host-local"
              }
@@ -94,6 +95,7 @@ spec:
         {%- endif %}
         - --service-external-ip-range={{ external_ip_range.ipv4 }}
         - --advertise-external-ip=true
+        - --hairpin-mode=true
         - -v=1
         env:
         - name: NODE_NAME
