@@ -1,5 +1,5 @@
 ---
-apiVersion: kubeadm.k8s.io/v1beta3
+apiVersion: kubeadm.k8s.io/v1beta4
 kind: ClusterConfiguration
 kubernetesVersion: {{ kubernetes_version.stdout }}
 clusterName: kube-router
@@ -32,7 +32,7 @@ networking:
 #    cloud-provider: external
 {% endif %}
 ---
-apiVersion: kubeadm.k8s.io/v1beta3
+apiVersion: kubeadm.k8s.io/v1beta4
 kind: InitConfiguration
 patches:
   directory: /etc/kubeadm/patches
@@ -48,13 +48,16 @@ nodeRegistration:
     # node-ip isn't supported when using a cloud provider
     # cloud-provider is currently deprecated and will likely need to be removed soon, for now, it still provides some
     # value in that it provides a special taint on the node until the cloud-controller has initialized the node
-    cloud-provider: external
+    - name: cloud-provider
+      value: external
 {% endif %}
 {# In the case of EC2 we rely on the AWS cloud-provider to provide these options #}
 {% if ipv6_enabled is defined %}
-    node-ip: {{ ansible_facts['default_ipv4'].address }},{{ ansible_facts['default_ipv6'].address }}
+    - name: node-ip
+      value: {{ ansible_facts['default_ipv4'].address }},{{ ansible_facts['default_ipv6'].address }}
 {% else %}
-    node-ip: {{ ansible_facts['default_ipv4'].address }}
+    - name: node-ip
+      value: {{ ansible_facts['default_ipv4'].address }}
 {% endif %}
 # To see more options that could go here, see: https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#config-file
 # You can also see the default values with: kubeadm config print init-defaults
