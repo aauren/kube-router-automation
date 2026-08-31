@@ -4,6 +4,10 @@
   apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
     state: present
+  register: docker_apt_key
+  until: docker_apt_key is success
+  delay: 6
+  retries: 5
   when: ansible_facts['pkg_mgr'] == "apt"
 
 - name: Add Docker Repository (apt)
@@ -12,27 +16,47 @@
       deb https://download.docker.com/linux/ubuntu
       {{ ansible_facts['distribution_release'] }} stable
     state: present
+  register: docker_apt_repository
+  until: docker_apt_repository is success
+  delay: 6
+  retries: 5
   when: ansible_facts['pkg_mgr'] == "apt"
 
 - name: Install dnf-plugins-core (dnf)
   dnf:
     name: dnf-plugins-core
+  register: dnf_plugins_install
+  until: dnf_plugins_install is success
+  delay: 6
+  retries: 5
   when: ansible_facts['pkg_mgr'] == "dnf"
 
 - name: Install docker containerd repos (dnf)
   command: dnf-3 config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  register: docker_dnf_repository
+  until: docker_dnf_repository is success
+  delay: 6
+  retries: 5
   when: ansible_facts['pkg_mgr'] == "dnf"
 
 - name: Install containerd.io (apt)
   apt:
     name: containerd.io
     update_cache: true
+  register: containerd_apt_install
+  until: containerd_apt_install is success
+  delay: 6
+  retries: 5
   when: ansible_facts['pkg_mgr'] == "apt"
 
 - name: Install containerd.io (dnf)
   dnf:
     name: containerd.io
     update_cache: true
+  register: containerd_dnf_install
+  until: containerd_dnf_install is success
+  delay: 6
+  retries: 5
   when: ansible_facts['pkg_mgr'] == "dnf"
 
 - name: Create containerd Config Dir
@@ -65,6 +89,9 @@
     url: "https://api.github.com/repos/containerd/nerdctl/releases/latest"
     return_content: true
   register: json_response
+  until: json_response is success
+  delay: 6
+  retries: 5
 
 - name: Parse Latest Nerdctl Tarball Version
   set_fact:
@@ -83,3 +110,7 @@
     remote_src: true
     include:
       - nerdctl
+  register: nerdctl_download
+  until: nerdctl_download is success
+  delay: 6
+  retries: 5
