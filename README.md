@@ -40,7 +40,14 @@ don't continue to get charged.
 ### General Setup
 
 * [Install Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
-* [Install Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+* Install Python 3.12 or newer, then install the pinned Ansible Core release in a virtual environment
+
+  ```bash
+  python3 -m venv .venv
+  source .venv/bin/activate
+  python3 -m pip install -r ansible/requirements.txt
+  ```
+
 * Install Ansible collections
 
   ```bash
@@ -50,7 +57,7 @@ don't continue to get charged.
 * For aws: Ensure that boto is installed for the AWS ansible collections to work correctly:
 
 ```sh
-pip install boto3
+python3 -m pip install boto3
 ```
 
 ### AWS Specific Setup
