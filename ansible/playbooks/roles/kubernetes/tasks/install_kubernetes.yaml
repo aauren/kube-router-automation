@@ -1,16 +1,15 @@
 ---
 
-- name: Add Kubernetes Repo Key (apt)
-  apt_key:
-    url: https://pkgs.k8s.io/core:/stable:/{{ kubernetes_version }}/deb/Release.key
-    state: present
-  when: ansible_facts['pkg_mgr'] == "apt"
-
 - name: Add Kubernetes Repository (apt)
-  apt_repository:
-    repo: deb https://pkgs.k8s.io/core:/stable:/{{ kubernetes_version }}/deb/ /
+  deb822_repository:
+    name: kubernetes
+    types:
+      - deb
+    uris: https://pkgs.k8s.io/core:/stable:/{{ kubernetes_version }}/deb/
+    suites: /
+    signed_by: https://pkgs.k8s.io/core:/stable:/{{ kubernetes_version }}/deb/Release.key
     state: present
-    filename: kubernetes
+    install_python_debian: true
   when: ansible_facts['pkg_mgr'] == "apt"
 
 - name: Add Kubernetes repo (dnf)

@@ -140,7 +140,7 @@ Once you are all done with your work on kube-router, you can tear down the VMs b
   will download images once on the first run and then continue to use them for all subsequent runs. This defines
   the directory that it will cache them in.
 * **ubuntu_image_url** -
-  `https://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64.img` - This is the image
+  `https://cloud-images.ubuntu.com/releases/26.04/release/ubuntu-26.04-server-cloudimg-amd64.img` - This is the image
   that you wish to use as your base Ubuntu image for running kube-router on.
 * **disk_size** - `20G` - This is the size that your OS image will be expanded to for your root disk. Accepts any valid
   `qemu-img` size.
@@ -176,8 +176,9 @@ Once you are all done with your work on kube-router, you can tear down the VMs b
 * **bgp_receiver_instance_size** - `t3.micro` - The instance size that you want to use for your bgp-workers
 * **kube_worker_disk_size** - `50` - The disk size that you want to use for your kube-workers
 * **bgp_receiver_disk_size** - `10` - The disk size that you want to use for your bgp-workers
-* **ami_filter** - `ubuntu-minimal/images/hvm-ssd/ubuntu-jammy-*-amd64-minimal-*` - Allows you to set a filter for the
-  AMI that you want to base your instances off of
+* **ami_filter** -
+  `ubuntu-minimal/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-minimal-*` - Allows you to set a filter for the AMI that
+  you want to base your instances off of
 * **ami_owners** - `amazon` - List of AMI owners to help direct searching for available AMIs
 * **ami_default_user** - `ubuntu` - The default user of the AMI which is used when generating static AWS manifests
   (not used in SSM mode)
