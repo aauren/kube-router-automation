@@ -1,21 +1,17 @@
 ---
 
-- name: Add Docker GPG apt Key (apt)
-  apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    state: present
-  register: docker_apt_key
-  until: docker_apt_key is success
-  delay: 6
-  retries: 5
-  when: ansible_facts['pkg_mgr'] == "apt"
-
 - name: Add Docker Repository (apt)
-  apt_repository:
-    repo: >-
-      deb https://download.docker.com/linux/ubuntu
-      {{ ansible_facts['distribution_release'] }} stable
+  deb822_repository:
+    name: docker
+    types:
+      - deb
+    uris: https://download.docker.com/linux/ubuntu
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components:
+      - stable
+    signed_by: https://download.docker.com/linux/ubuntu/gpg
     state: present
+    install_python_debian: true
   register: docker_apt_repository
   until: docker_apt_repository is success
   delay: 6
