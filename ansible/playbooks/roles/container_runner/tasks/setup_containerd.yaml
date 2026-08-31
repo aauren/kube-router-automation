@@ -8,7 +8,9 @@
 
 - name: Add Docker Repository (apt)
   apt_repository:
-    repo: deb https://download.docker.com/linux/ubuntu focal stable
+    repo: >-
+      deb https://download.docker.com/linux/ubuntu
+      {{ ansible_facts['distribution_release'] }} stable
     state: present
   when: ansible_facts['pkg_mgr'] == "apt"
 
