@@ -42,6 +42,31 @@
   retries: 20
   when: ansible_facts['pkg_mgr'] == "dnf"
 
+# The Rocky cloud images ship a minimal kernel (kernel-core + kernel-modules-core) that doesn't include br_netfilter,
+# which lives in kernel-modules. dnf will only install kernel-modules for the newest kernel-core, so if a package
+# update during cloud-init pulled in a newer kernel we have to reboot into it before the module is usable.
+- name: Ensure kernel-modules is Installed (dnf)
+  dnf:
+    name: kernel-modules
+  register: dnf_kmods_status
+  until: dnf_kmods_status is success
+  delay: 6
+  retries: 20
+  when: ansible_facts['pkg_mgr'] == "dnf"
+
+- name: Find Newest Installed Kernel (dnf)
+  shell: rpm -q --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' kernel-core | sort -V | tail -n1
+  register: newest_kernel
+  changed_when: false
+  when: ansible_facts['pkg_mgr'] == "dnf"
+
+- name: Reboot Into Newest Kernel (dnf)
+  reboot:
+    reboot_timeout: 600
+  when:
+    - ansible_facts['pkg_mgr'] == "dnf"
+    - newest_kernel.stdout != ansible_facts['kernel']
+
 - name: Disable Unattended apt Upgrades
   apt:
     name: unattended-upgrades
