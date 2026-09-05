@@ -30,7 +30,7 @@ resource "aws_s3_bucket" "ansible_ssm_bucket" {
   force_destroy = true
 }
 
-# SSM document to set default user for SSM sessions
+# SSM document to set the default user for Ansible sessions
 resource "aws_ssm_document" "ssm_default_user" {
   count           = var.enable_ssm ? 1 : 0
   name            = "ConnectAsDefaultUser"
@@ -39,11 +39,11 @@ resource "aws_ssm_document" "ssm_default_user" {
 
   content = jsonencode({
     schemaVersion = "1.0"
-    description   = "Document to configure default user for Session Manager"
+    description   = "Document to configure the default Ansible user for Session Manager"
     sessionType   = "Standard_Stream"
     inputs = {
       runAsEnabled     = true
-      runAsDefaultUser = var.ami_default_user
+      runAsDefaultUser = "ssm-user"
     }
   })
 
