@@ -23,7 +23,7 @@ ansible_become_method: sudo
 ansible_become_user: root
 ansible_connection: "amazon.aws.aws_ssm"
 ansible_python_interpreter: /usr/bin/python3
-ansible_user: ${var.ami_default_user}
+ansible_user: ssm-user
 EOF
   filename = "../ansible/inventory/group_vars/aws_ec2"
 }
