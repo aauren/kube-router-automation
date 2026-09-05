@@ -74,7 +74,9 @@
 
 - name: Ensure IPv6 NAT Config
   hosts: localhost
-  become: true
+  # Only libvirt deployments need us to become root on localhost to set up NAT/forwarding for VM
+  # traffic, so we skip becoming (and thus needing -K) entirely for AWS inventory hosts.
+  become: "{{ libvirt_deployment | default(false) }}"
   tags:
     - setup
     - baseline
@@ -88,14 +90,14 @@
         chain: POSTROUTING
         source: "{{ node_ip_range.ipv6 }}"
         jump: MASQUERADE
-      when: ipv6_enabled is defined and hostvars["aws-controller"] is not defined
+      when: ipv6_enabled is defined and libvirt_deployment | default(false)
     - name: Add IPv4 Tables Foward Policy ACCEPT
       iptables:
         ip_version: ipv4
         table: filter
         chain: FORWARD
         policy: ACCEPT
-      when: hostvars["aws-controller"] is not defined
+      when: libvirt_deployment | default(false)
 
 - name: Ensure Basic Host Config
   hosts: all
