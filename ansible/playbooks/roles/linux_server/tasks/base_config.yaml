@@ -18,6 +18,7 @@
       - iperf3
       - ndisc6
       - gpg
+      - iproute2
     update_cache: true
   register: apt_status
   until: apt_status is success
@@ -32,6 +33,7 @@
       - dnsutils
       - tcpdump
       - iperf3
+      - iproute
       # This isn't available in rocky linux - ndisc6
     update_cache: true
   register: dnf_status
@@ -45,3 +47,56 @@
     name: unattended-upgrades
     state: absent
   when: ansible_facts['pkg_mgr'] == "apt"
+
+# Newer iproute2 (Ubuntu 26.04+, Debian trixie+) ships its config under
+# /usr/share/iproute2 and no longer creates /etc/iproute2 at all. kube-router
+# bind mounts /etc/iproute2/rt_tables from every node, and if that path is
+# missing the container runtime creates it as a directory, so we make sure a
+# real file exists on all hosts before any pods land.
+- name: Check rt_tables on host
+  stat:
+    path: /etc/iproute2/rt_tables
+  register: rt_tabs
+
+- name: Check for packaged rt_tables
+  stat:
+    path: /usr/share/iproute2/rt_tables
+  register: pkg_rt_tabs
+
+- name: Remove rt_tables if a container runtime turned it into a directory
+  file:
+    path: /etc/iproute2/rt_tables
+    state: absent
+  when: rt_tabs.stat.exists and rt_tabs.stat.isdir
+
+- name: Ensure /etc/iproute2 exists
+  file:
+    path: /etc/iproute2
+    state: directory
+    mode: '0755'
+
+- name: Copy packaged rt_tables into /etc/iproute2
+  copy:
+    remote_src: true
+    src: /usr/share/iproute2/rt_tables
+    dest: /etc/iproute2/rt_tables
+    mode: '0644'
+  when: (not rt_tabs.stat.exists or rt_tabs.stat.isdir) and pkg_rt_tabs.stat.exists
+
+- name: Write default rt_tables when no packaged copy exists
+  copy:
+    dest: /etc/iproute2/rt_tables
+    mode: '0644'
+    content: |
+      #
+      # reserved values
+      #
+      255     local
+      254     main
+      253     default
+      0       unspec
+      #
+      # local
+      #
+      #1     inr.ruhep
+  when: (not rt_tabs.stat.exists or rt_tabs.stat.isdir) and not pkg_rt_tabs.stat.exists
