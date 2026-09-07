@@ -67,6 +67,10 @@ python3 -m pip install boto3
 * By default this project uses AWS Session Manager (SSM) for managing AWS instances and providing a default inventory
   for Ansible to use. If you don't want to use AWS SSM and instead want to use a static inventory be sure to set the
   Terraform variable `enable_ssm` to `false`
+* The generated inventory connects with `aws_ssm_retry`, a small wrapper around `amazon.aws.aws_ssm` that lives in
+  `ansible/playbooks/connection_plugins/`. It exists because upstream ignores `ansible_aws_ssm_retries`, and without
+  working retries any SSM agent restart mid-play (such as the `AWS-UpdateSSMAgent` association) fails the host. The
+  `ansible.cfg` in the repo root points ad-hoc `ansible` runs at it, so be sure to run from the repo root
 
 ### Libvirt Specific Setup
 
