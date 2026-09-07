@@ -1,18 +1,15 @@
 ---
-- name: Find UID
+- name: Find User Identity
   become: false
-  command: id -u
-  register: user_id
+  shell: echo "$(id -u) $(id -g) ${HOME}"
+  register: user_ident
+  changed_when: false
 
-- name: Find GID
-  become: false
-  command: id -g
-  register: group_id
-
-- name: Find Home
-  become: false
-  command: echo ${HOME}
-  register: home
+- name: Set User Identity Facts
+  set_fact:
+    user_id: "{{ user_ident.stdout.split()[0] }}"
+    group_id: "{{ user_ident.stdout.split()[1] }}"
+    home: "{{ user_ident.stdout.split()[2] }}"
 
 - name: Find Remote Home
   become: false
@@ -23,15 +20,15 @@
 
 - name: Output UID & GID
   debug:
-    msg: "User ID: {{ user_id.stdout }} / Group ID: {{ group_id.stdout }}"
+    msg: "User ID: {{ user_id }} / Group ID: {{ group_id }}"
 
 - name: Create kube Config Dir in User's Home
   file:
-    path: "{{ home.stdout }}/.kube"
+    path: "{{ home }}/.kube"
     state: directory
     mode: "0750"
-    owner: "{{ user_id.stdout }}"
-    group: "{{ group_id.stdout }}"
+    owner: "{{ user_id }}"
+    group: "{{ group_id }}"
 
 - name: Grab kube config from Leader
   slurp:
@@ -42,31 +39,30 @@
 
 - name: Check if local kube/config exists locally
   stat:
-    path: "{{ home.stdout }}/.kube/config"
+    path: "{{ home }}/.kube/config"
   register: local_config_path
 
 - name: Backup existing kubeconfig
   copy:
-    # Because we used a loop command (even over just one host) we have to parse results to get to stdout
-    src: "{{ home.stdout }}/.kube/config"
-    dest: "{{ home.stdout }}/.kube/config.bak"
+    src: "{{ home }}/.kube/config"
+    dest: "{{ home }}/.kube/config.bak"
     mode: "0600"
-    owner: "{{ user_id.stdout }}"
-    group: "{{ group_id.stdout }}"
+    owner: "{{ user_id }}"
+    group: "{{ group_id }}"
   when: local_config_path.stat.exists
 
 - name: Copy Kube Config to Home
   copy:
     # Because we used a loop command (even over just one host) we have to parse results to get to stdout
     content: "{{ kube_config['results'][0]['content'] | b64decode }}"
-    dest: "{{ home.stdout }}/.kube/config"
+    dest: "{{ home }}/.kube/config"
     mode: "0600"
-    owner: "{{ user_id.stdout }}"
-    group: "{{ group_id.stdout }}"
+    owner: "{{ user_id }}"
+    group: "{{ group_id }}"
 
 - name: Replace internal IP with external IP
   replace:
-    path: "{{ home.stdout }}/.kube/config"
+    path: "{{ home }}/.kube/config"
     regexp: '{{ hostvars["aws-controller"].ansible_facts["default_ipv4"].address }}'
     replace: '{{ hostvars["aws-controller"].ec2_public_ip if hostvars["aws-controller"].get("ec2_public_ip", "") != "" else hostvars["aws-controller"].ansible_host }}'
   when: hostvars["aws-controller"] is defined
