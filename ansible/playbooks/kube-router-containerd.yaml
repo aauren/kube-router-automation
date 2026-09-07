@@ -168,7 +168,6 @@
 - name: Join Cluster with Remaining Nodes
   hosts: workers
   become: true
-  serial: 1
   tasks:
     - name: Join Cluster with kubeadm
       tags:
@@ -187,7 +186,6 @@
 
 - name: Deploy kube-router
   hosts: leader
-  serial: 1
   vars_files:
     - vars/common_vars.yaml
   tasks:
