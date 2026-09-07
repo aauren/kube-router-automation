@@ -9,6 +9,19 @@
 - name: Update sysctl
   command: sysctl --system
 
+# This goes first so that unattended-upgrades stops competing with us for the dpkg lock as early as possible. On a
+# fresh Ubuntu boot it can hold the lock for minutes, which is what the long retry loops below are waiting on.
+- name: Disable Unattended apt Upgrades
+  apt:
+    name: unattended-upgrades
+    state: absent
+  register: apt_unattended_status
+  until: apt_unattended_status is success
+  delay: 6
+  retries: 20
+  when: ansible_facts['pkg_mgr'] == "apt"
+
+# cloud-init already ran apt update on first boot, so we only refresh if the lists are stale
 - name: Install Standard Network Utils (apt)
   apt:
     name:
@@ -20,6 +33,7 @@
       - gpg
       - iproute2
     update_cache: true
+    cache_valid_time: 3600
   register: apt_status
   until: apt_status is success
   delay: 6
@@ -66,12 +80,6 @@
   when:
     - ansible_facts['pkg_mgr'] == "dnf"
     - newest_kernel.stdout != ansible_facts['kernel']
-
-- name: Disable Unattended apt Upgrades
-  apt:
-    name: unattended-upgrades
-    state: absent
-  when: ansible_facts['pkg_mgr'] == "apt"
 
 # Newer iproute2 (Ubuntu 26.04+, Debian trixie+) ships its config under
 # /usr/share/iproute2 and no longer creates /etc/iproute2 at all. kube-router
