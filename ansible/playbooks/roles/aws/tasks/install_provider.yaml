@@ -9,10 +9,13 @@
     mode: '0750'
 
 - name: Copy AWS manifests
-  copy:
+  synchronize:
     src: ../files/
-    dest: "~/manifests"
-    mode: '0640'
+    # A relative rsync dest lands in the remote user's home without depending on ~ expansion
+    dest: manifests
+    use_ssh_args: true
+    rsync_opts:
+      - "--chmod=D0750,F0640"
 
 - name: Generate AWS cloud-config ConfigMap
   template:
