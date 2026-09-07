@@ -46,3 +46,6 @@ vars/*
 
 # Python bytecode from the local connection plugin shim
 __pycache__/
+
+# Private key Terraform generates for SSH-over-SSM
+/ansible/inventory/aws_ssm_ssh_key

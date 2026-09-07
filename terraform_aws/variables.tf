@@ -106,3 +106,16 @@ variable "ansible_ssm_bucket_name" {
   type    = string
   default = "kube-router-aws-ssm-ansible"
 }
+
+# How Ansible reaches the instances when enable_ssm is true. "ssh" tunnels SSH through Session Manager
+# (AWS-StartSSHSession), which gets us ControlPersist and pipelining and is several times faster per task.
+# "plugin" keeps the older amazon.aws.aws_ssm connection plugin, which needs the S3 bucket and session document.
+variable "ansible_ssm_transport" {
+  type    = string
+  default = "ssh"
+
+  validation {
+    condition     = contains(["ssh", "plugin"], var.ansible_ssm_transport)
+    error_message = "ansible_ssm_transport must be either \"ssh\" or \"plugin\"."
+  }
+}

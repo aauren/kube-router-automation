@@ -67,10 +67,17 @@ python3 -m pip install boto3
 * By default this project uses AWS Session Manager (SSM) for managing AWS instances and providing a default inventory
   for Ansible to use. If you don't want to use AWS SSM and instead want to use a static inventory be sure to set the
   Terraform variable `enable_ssm` to `false`
-* The generated inventory connects with `aws_ssm_retry`, a small wrapper around `amazon.aws.aws_ssm` that lives in
-  `ansible/playbooks/connection_plugins/`. It exists because upstream ignores `ansible_aws_ssm_retries`, and without
-  working retries any SSM agent restart mid-play (such as the `AWS-UpdateSSMAgent` association) fails the host. The
-  `ansible.cfg` in the repo root points ad-hoc `ansible` runs at it, so be sure to run from the repo root
+* By default (`ansible_ssm_transport = "ssh"`) Ansible reaches the instances over SSH tunneled through Session
+  Manager, using `aws ssm start-session --document-name AWS-StartSSHSession` as a `ProxyCommand`. No inbound security
+  group rule or `aws_key_name` is needed for this, since Terraform generates an ed25519 key for `ssm-user` and writes
+  the private half to `ansible/inventory/aws_ssm_ssh_key` (gitignored). This is quite a bit faster than the
+  `aws_ssm` connection plugin because every task no longer has to bounce its payload through S3, and we get SSH
+  ControlPersist and pipelining for free
+* If you'd rather use the `amazon.aws.aws_ssm` connection plugin, set `ansible_ssm_transport = "plugin"`. In that
+  mode the generated inventory connects with `aws_ssm_retry`, a small wrapper around `amazon.aws.aws_ssm` that lives
+  in `ansible/playbooks/connection_plugins/`. It exists because upstream ignores `ansible_aws_ssm_retries`, and
+  without working retries any SSM agent restart mid-play (such as the `AWS-UpdateSSMAgent` association) fails the
+  host. The `ansible.cfg` in the repo root points ad-hoc `ansible` runs at it, so be sure to run from the repo root
 
 ### Libvirt Specific Setup
 
@@ -195,8 +202,10 @@ Once you are all done with your work on kube-router, you can tear down the VMs b
   (not used in SSM mode)
 * **ami_type** - `ubuntu` - The default type of the OS for the selected AMI type (used for detecting the proper package
   names in cloud-init installs)
+* **ansible_ssm_transport** - `ssh` - How Ansible connects when `enable_ssm` is true. `ssh` tunnels SSH through
+  Session Manager (fast, no bucket needed), `plugin` uses the `amazon.aws.aws_ssm` connection plugin
 * **ansible_ssm_bucket_name** - `kube-router-aws-ssm-ansible` - Default bucket name to use for discovering SSM
-  information in Ansible
+  information in Ansible (only used when `ansible_ssm_transport` is `plugin`)
 
 ### Ansible Variables
 
