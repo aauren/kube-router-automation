@@ -65,12 +65,13 @@
       import_role:
         name: common
         tasks_from: wait_for_ssm
-      when: '"aws_ssm" in ansible_connection'
+      # Both SSM transports (the aws_ssm plugin and SSH tunneled through the agent) set this from the inventory
+      when: ansible_aws_ssm_instance_id is defined
     - name: Check for Hosts to be up
       import_role:
         name: common
         tasks_from: wait_for_ssh
-      when: ansible_connection == "ssh"
+      when: ansible_aws_ssm_instance_id is not defined and ansible_connection == "ssh"
 
 - name: Ensure IPv6 NAT Config
   hosts: localhost
