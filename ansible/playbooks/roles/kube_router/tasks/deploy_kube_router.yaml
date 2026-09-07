@@ -21,13 +21,14 @@
     dest: "~/manifests/kube-router.yaml"
   when: file_manifest is defined and deploy_from_local_template is not defined
 
-# This is needed because by default this is a new play and we don't have facts for anything other than the kubernetes
-# leader. This gathers the facts from our BGP routers so that we have access to their default IPv4 address below.
+# In a full run the BGP routers already had their facts gathered by the earlier hosts: all plays, so we only pay
+# for another setup here when someone runs this play on its own (e.g. --tags kube-router).
 - name: Gather Facts From BGP Routers
   setup:
   delegate_to: "{{ item }}"
   delegate_facts: true
   loop: "{{ groups['bgp_routers'] }}"
+  when: hostvars[item].ansible_facts.default_ipv4 is not defined
 
 - name: Set BGP Peer IPs
   set_fact:
