@@ -60,8 +60,10 @@ variable "kube_worker_instance_size" {
 }
 
 variable "bgp_receiver_instance_size" {
-  type    = string
-  default = "t3.micro"
+  type = string
+  # A t3.micro takes ~9 minutes to get through cloud-init's package step on Rocky (dnf depsolve swaps in 1 GB and
+  # dracut runs twice), which nearly blows the 600s wait_for_connection budget before the SSM agent even installs
+  default = "t3.small"
 }
 
 variable "kube_worker_disk_size" {
