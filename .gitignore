@@ -29,6 +29,7 @@ override.tf.json
 # example: *tfplan*
 
 .terraform.lock.hcl
+.venv/
 
 # Ignore Intellij IDEA files
 .idea
@@ -42,3 +43,9 @@ vars/*
 # Ignore aws inventories
 /ansible/inventory/aws_ec2.yaml
 /ansible/inventory/group_vars/aws_ec2
+
+# Python bytecode from the local connection plugin shim
+__pycache__/
+
+# Private key Terraform generates for SSH-over-SSM
+/ansible/inventory/aws_ssm_ssh_key

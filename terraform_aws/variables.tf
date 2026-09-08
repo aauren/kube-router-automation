@@ -60,8 +60,10 @@ variable "kube_worker_instance_size" {
 }
 
 variable "bgp_receiver_instance_size" {
-  type    = string
-  default = "t3.micro"
+  type = string
+  # A t3.micro takes ~9 minutes to get through cloud-init's package step on Rocky (dnf depsolve swaps in 1 GB and
+  # dracut runs twice), which nearly blows the 600s wait_for_connection budget before the SSM agent even installs
+  default = "t3.small"
 }
 
 variable "kube_worker_disk_size" {
@@ -83,7 +85,7 @@ variable "ami_filter" {
   type = list(any)
   default = [{
     name  = "name"
-    value = "ubuntu-minimal/images/hvm-ssd/ubuntu-jammy-*-amd64-minimal-*"
+    value = "ubuntu-minimal/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-minimal-*"
   }]
 }
 
@@ -105,4 +107,17 @@ variable "ami_type" {
 variable "ansible_ssm_bucket_name" {
   type    = string
   default = "kube-router-aws-ssm-ansible"
+}
+
+# How Ansible reaches the instances when enable_ssm is true. "ssh" tunnels SSH through Session Manager
+# (AWS-StartSSHSession), which gets us ControlPersist and pipelining and is several times faster per task.
+# "plugin" keeps the older amazon.aws.aws_ssm connection plugin, which needs the S3 bucket and session document.
+variable "ansible_ssm_transport" {
+  type    = string
+  default = "ssh"
+
+  validation {
+    condition     = contains(["ssh", "plugin"], var.ansible_ssm_transport)
+    error_message = "ansible_ssm_transport must be either \"ssh\" or \"plugin\"."
+  }
 }

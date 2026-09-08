@@ -9,19 +9,24 @@
   block:
     - name: Create Manifest Dir
       file:
-        path: "{{ ansible_facts['env'].HOME }}/misc_manifests"
+        path: "~/misc_manifests"
         state: directory
         mode: "0750"
 
+    # copy does a full round-trip per file, which adds up to ~30s through the SSM tunnel. rsync ships the
+    # whole tree in one session. use_ssh_args is what carries the ProxyCommand over from the inventory.
     - name: Push Manifests to Leader
-      copy:
+      synchronize:
         src: ../../../../../manifests/
-        dest: "{{ ansible_facts['env'].HOME }}/misc_manifests"
-        mode: "0640"
+        # A relative rsync dest lands in the remote user's home without depending on ~ expansion
+        dest: misc_manifests
+        use_ssh_args: true
+        rsync_opts:
+          - "--chmod=D0750,F0640"
 
     - name: Find Manifest Files
       find:
-        paths: "{{ ansible_facts['env'].HOME }}/misc_manifests"
+        paths: "~/misc_manifests"
         patterns: "*.yaml,*.yml"
       register: manifest_files
 

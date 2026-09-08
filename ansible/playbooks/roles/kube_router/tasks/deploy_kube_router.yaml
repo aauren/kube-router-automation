@@ -1,45 +1,34 @@
 ---
 
-- name: Check rt_tables exists
-  stat:
-    path: /etc/iproute2/rt_tables
-  register: rt_tabs
-
-- name: Ensure rt_tables is installed
-  become: true
-  copy:
-    remote_src: true
-    src: /usr/share/iproute2/rt_tables
-    dest: /etc/iproute2/rt_tables
-    directory_mode: 0755
-    mode: preserve
-  when: rt_tabs.stat.exists is not defined or rt_tabs.stat.exists == False
+# /etc/iproute2/rt_tables is prepared on every node by linux_server/base_config,
+# since kube-router bind mounts it on all hosts and not just the leader
 
 - name: Create Manifest Dir
   file:
-    path: "{{ ansible_facts['env'].HOME }}/manifests"
+    path: "~/manifests"
     state: directory
     mode: '0750'
 
 - name: Get kube-router Manifest from Upstream
   get_url:
     url: "{{ manifest }}"
-    dest: "{{ ansible_facts['env'].HOME }}/manifests/kube-router.yaml"
+    dest: "~/manifests/kube-router.yaml"
   when: file_manifest is not defined and deploy_from_local_template is not defined
 
 - name: Send Local kube-router Manifest to Remote
   copy:
     src: "{{ file_manifest }}"
-    dest: "{{ ansible_facts['env'].HOME }}/manifests/kube-router.yaml"
+    dest: "~/manifests/kube-router.yaml"
   when: file_manifest is defined and deploy_from_local_template is not defined
 
-# This is needed because by default this is a new play and we don't have facts for anything other than the kubernetes
-# leader. This gathers the facts from our BGP routers so that we have access to their default IPv4 address below.
+# In a full run the BGP routers already had their facts gathered by the earlier hosts: all plays, so we only pay
+# for another setup here when someone runs this play on its own (e.g. --tags kube-router).
 - name: Gather Facts From BGP Routers
   setup:
   delegate_to: "{{ item }}"
   delegate_facts: true
   loop: "{{ groups['bgp_routers'] }}"
+  when: hostvars[item].ansible_facts.default_ipv4 is not defined
 
 - name: Set BGP Peer IPs
   set_fact:
@@ -49,11 +38,11 @@
 - name: Render Local kube-router Manifest to Remote
   template:
     src: templates/kube-router.yaml.j2
-    dest: "{{ ansible_facts['env'].HOME }}/manifests/kube-router.yaml"
+    dest: "~/manifests/kube-router.yaml"
   when: file_manifest is not defined and deploy_from_local_template is defined
 
 - name: Deploy kube-router Manifest
-  command: kubectl apply -f {{ ansible_facts['env'].HOME }}/manifests/kube-router.yaml
+  command: kubectl apply -f ~/manifests/kube-router.yaml
 
 - name: Remove kube-proxy
   command: kubectl -n kube-system delete daemonset kube-proxy

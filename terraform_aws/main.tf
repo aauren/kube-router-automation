@@ -192,7 +192,7 @@ resource "aws_instance" "kube-controller" {
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
   ipv6_address_count          = 1
   associate_public_ip_address = true
-  user_data                   = templatefile("${path.module}/configs/cloud_init.cfg", { ami_type = var.ami_type, enable_ssm = var.enable_ssm })
+  user_data                   = templatefile("${path.module}/configs/cloud_init.cfg", { ami_type = var.ami_type, enable_ssm = var.enable_ssm, region = var.region, ssm_ssh_public_key = local.ansible_ssm_ssh_public_key })
   source_dest_check           = false
 
   root_block_device {
@@ -226,7 +226,7 @@ resource "aws_instance" "kube-worker" {
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
   ipv6_address_count          = 1
   associate_public_ip_address = true
-  user_data                   = templatefile("${path.module}/configs/cloud_init.cfg", { ami_type = var.ami_type, enable_ssm = var.enable_ssm })
+  user_data                   = templatefile("${path.module}/configs/cloud_init.cfg", { ami_type = var.ami_type, enable_ssm = var.enable_ssm, region = var.region, ssm_ssh_public_key = local.ansible_ssm_ssh_public_key })
   source_dest_check           = false
 
   root_block_device {
@@ -259,7 +259,7 @@ resource "aws_instance" "bgp-receiver" {
   vpc_security_group_ids      = [aws_security_group.web-sg.id]
   ipv6_address_count          = 1
   associate_public_ip_address = true
-  user_data                   = templatefile("${path.module}/configs/cloud_init.cfg", { ami_type = var.ami_type, enable_ssm = var.enable_ssm })
+  user_data                   = templatefile("${path.module}/configs/cloud_init.cfg", { ami_type = var.ami_type, enable_ssm = var.enable_ssm, region = var.region, ssm_ssh_public_key = local.ansible_ssm_ssh_public_key })
   source_dest_check           = false
 
   root_block_device {
