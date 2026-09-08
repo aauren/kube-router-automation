@@ -191,7 +191,7 @@ Once you are all done with your work on kube-router, you can tear down the VMs b
 * **private_cidr_breakdowns** - (see variables) - The CIDR blocks that you want to use for your instances that are
   available privately
 * **kube_worker_instance_size** - `t3.medium` - The instance size that you want to use for your kube-workers
-* **bgp_receiver_instance_size** - `t3.micro` - The instance size that you want to use for your bgp-workers
+* **bgp_receiver_instance_size** - `t3.small` - The instance size that you want to use for your bgp-workers
 * **kube_worker_disk_size** - `50` - The disk size that you want to use for your kube-workers
 * **bgp_receiver_disk_size** - `10` - The disk size that you want to use for your bgp-workers
 * **ami_filter** -
