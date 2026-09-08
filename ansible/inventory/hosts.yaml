@@ -5,6 +5,9 @@ all:
     bgp-route-vm1:
   vars:
     ansible_python_interpreter: /usr/bin/python3
+    # Only the libvirt inventory needs to become root on localhost to apply NAT/forwarding rules
+    # for VM traffic, so we use this to skip that play entirely for AWS inventory hosts.
+    libvirt_deployment: true
   children:
     container_runners:
       hosts:
