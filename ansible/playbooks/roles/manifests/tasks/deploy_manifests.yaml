@@ -15,6 +15,8 @@
 
     # copy does a full round-trip per file, which adds up to ~30s through the SSM tunnel. rsync ships the
     # whole tree in one session. use_ssh_args is what carries the ProxyCommand over from the inventory.
+    # This only works over an actual shell transport though, so aws_ssm_retry (SSM over the AWS API, no
+    # ssh/docker/local underneath) falls back to plain copy below.
     - name: Push Manifests to Leader
       synchronize:
         src: ../../../../../manifests/
@@ -23,6 +25,14 @@
         use_ssh_args: true
         rsync_opts:
           - "--chmod=D0750,F0640"
+      when: ansible_connection != 'aws_ssm_retry'
+
+    - name: Push Manifests to Leader (aws_ssm_retry fallback)
+      copy:
+        src: ../../../../../manifests/
+        dest: "~/misc_manifests"
+        mode: "0640"
+      when: ansible_connection == 'aws_ssm_retry'
 
     - name: Find Manifest Files
       find:

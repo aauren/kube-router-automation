@@ -8,6 +8,9 @@
     state: directory
     mode: '0750'
 
+# synchronize (rsync) can't run over the aws_ssm_retry connection - rsync needs an actual shell
+# transport (ssh/docker/local) to build its --rsh command, and the aws_ssm plugin talks to hosts over
+# the AWS API instead, so we fall back to copy there and eat the slower per-file round trips.
 - name: Copy AWS manifests
   synchronize:
     src: ../files/
@@ -16,6 +19,14 @@
     use_ssh_args: true
     rsync_opts:
       - "--chmod=D0750,F0640"
+  when: ansible_connection != 'aws_ssm_retry'
+
+- name: Copy AWS manifests (aws_ssm_retry fallback)
+  copy:
+    src: ../files/
+    dest: "~/manifests"
+    mode: '0640'
+  when: ansible_connection == 'aws_ssm_retry'
 
 - name: Generate AWS cloud-config ConfigMap
   template:
