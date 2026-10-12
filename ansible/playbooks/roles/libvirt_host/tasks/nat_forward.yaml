@@ -1,0 +1,42 @@
+---
+
+# Runs on the libvirt hypervisor (localhost) and needs node_ip_range from vars/common_vars.yaml. It makes sure VM traffic
+# can be forwarded off the host and, when IPv6 is enabled, that it is NATed on the way out.
+
+# The old version of this rule matched every packet sourced from the node range, which also masqueraded host to VM and
+# intra-subnet traffic. Removing it here keeps existing hosts from carrying both versions of the rule.
+- name: Remove Broad IPv6 Masquerade Rule From Earlier Runs
+  iptables:
+    ip_version: ipv6
+    table: nat
+    chain: POSTROUTING
+    source: "{{ node_ip_range.ipv6 }}"
+    jump: MASQUERADE
+    state: absent
+  when: ipv6_enabled is defined
+
+- name: Add IPv6 Tables Masquerade On Host If Enabled
+  iptables:
+    ip_version: ipv6
+    table: nat
+    chain: POSTROUTING
+    source: "{{ node_ip_range.ipv6 }}"
+    destination: "!{{ node_ip_range.ipv6 }}"
+    jump: MASQUERADE
+    comment: kube-router-automation VM IPv6 masquerade
+  when: ipv6_enabled is defined
+
+- name: Allow Forwarding For IPv4 VM Traffic
+  include_tasks: forward_family.yaml
+  vars:
+    iptables_cmd: iptables
+    iptables_ip_version: ipv4
+    vm_cidr: "{{ node_ip_range.ipv4 }}"
+
+- name: Allow Forwarding For IPv6 VM Traffic
+  include_tasks: forward_family.yaml
+  vars:
+    iptables_cmd: ip6tables
+    iptables_ip_version: ipv6
+    vm_cidr: "{{ node_ip_range.ipv6 }}"
+  when: ipv6_enabled is defined
