@@ -84,20 +84,10 @@
   vars_files:
     - vars/common_vars.yaml
   tasks:
-    - name: Add IPv6 Tables Masquerade On Host If Enabled
-      iptables:
-        ip_version: ipv6
-        table: nat
-        chain: POSTROUTING
-        source: "{{ node_ip_range.ipv6 }}"
-        jump: MASQUERADE
-      when: ipv6_enabled is defined and libvirt_deployment | default(false)
-    - name: Add IPv4 Tables Foward Policy ACCEPT
-      iptables:
-        ip_version: ipv4
-        table: filter
-        chain: FORWARD
-        policy: ACCEPT
+    - name: Setup Host Forwarding & NAT For VMs
+      import_role:
+        name: libvirt_host
+        tasks_from: nat_forward
       when: libvirt_deployment | default(false)
 
 - name: Ensure Basic Host Config

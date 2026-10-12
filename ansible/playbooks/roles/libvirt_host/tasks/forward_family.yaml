@@ -1,0 +1,58 @@
+---
+
+# Expects iptables_cmd (iptables or ip6tables), iptables_ip_version (ipv4 or ipv6) and vm_cidr to be set by the caller.
+#
+# Docker sets a DROP policy on FORWARD and expects admins to punch holes in its DOCKER-USER chain, which it never
+# flushes. If we flip the policy to ACCEPT instead, Docker resets it the next time the daemon restarts. So when Docker
+# is managing this family we use DOCKER-USER, and everywhere else we fall back to setting the policy.
+- name: "Read {{ iptables_ip_version }} FORWARD Policy"
+  command: "{{ iptables_cmd }} -S FORWARD"
+  register: forward_rules
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: "Look For Docker's {{ iptables_ip_version }} DOCKER-USER Chain"
+  command: "{{ iptables_cmd }} -S DOCKER-USER"
+  register: docker_user_chain
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: "Detect Docker Dropping {{ iptables_ip_version }} Forwarded Traffic"
+  set_fact:
+    docker_drops_forward: >-
+      {{ forward_rules.rc == 0 and docker_user_chain.rc == 0 and '-P FORWARD DROP' in forward_rules.stdout_lines }}
+
+- name: "Allow {{ iptables_ip_version }} VM Traffic Out Via DOCKER-USER"
+  iptables:
+    ip_version: "{{ iptables_ip_version }}"
+    chain: DOCKER-USER
+    action: insert
+    source: "{{ vm_cidr }}"
+    jump: ACCEPT
+    comment: kube-router-automation VM outbound
+  when: docker_drops_forward | bool
+
+- name: "Allow {{ iptables_ip_version }} VM Return Traffic Via DOCKER-USER"
+  iptables:
+    ip_version: "{{ iptables_ip_version }}"
+    chain: DOCKER-USER
+    action: insert
+    destination: "{{ vm_cidr }}"
+    ctstate:
+      - ESTABLISHED
+      - RELATED
+    jump: ACCEPT
+    comment: kube-router-automation VM return
+  when: docker_drops_forward | bool
+
+- name: "Add {{ iptables_ip_version }} Tables Foward Policy ACCEPT"
+  iptables:
+    ip_version: "{{ iptables_ip_version }}"
+    table: filter
+    chain: FORWARD
+    policy: ACCEPT
+  when:
+    - not (docker_drops_forward | bool)
+    - forward_rules.rc == 0
