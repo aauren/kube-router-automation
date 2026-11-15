@@ -107,9 +107,41 @@ Host bgp-route-vm*
 * Change directory into either `terraform_libvirt` or `terraform_aws`
 * Customize any variables that you want to run differently from the default and place them in the vars file provided for
   you and helpfully excluded from git. See variables section below.
-* From this project repo run: `terraform init`
+* From this project repo run: `terraform init` (for `terraform_aws`, see
+  [Using the kube-router AWS Sandbox](#using-the-kube-router-aws-sandbox) below for the backend settings)
 * From this project repo run (make sure to substitute your variables for the path below):
   `terraform apply -auto-approve -var-file="../vars/<my_vars.tfvars>"`
+
+### Using the kube-router AWS Sandbox
+
+`terraform_aws` keeps its state in S3, so that a cluster's state outlives the machine that created it and so that the
+sandbox's reaper never leaves anyone holding stale local state. For the kube-router maintainers' sandbox account, the
+bucket settings live in `terraform_aws/sandbox.s3.tfbackend`, and each cluster gets its own state key so that
+maintainers working at the same time don't share state. Something like the following:
+
+```sh
+aws sso login --sso-session kube-router
+export AWS_PROFILE=kube-router-sandbox
+cd terraform_aws
+terraform init -backend-config=sandbox.s3.tfbackend \
+  -backend-config="key=<your github handle>/<cluster name>/terraform.tfstate"
+terraform apply -var-file="../vars/<my_vars.tfvars>"
+```
+
+Be sure to run `terraform init -reconfigure` with a different key whenever you switch to a different cluster. In your
+vars file, you'll want `region = "us-east-2"`, since the sandbox denies everything outside of it, and a `name` that's
+unique to you. Then the following also applies:
+
+* The sandbox's reaper deletes anything older than 48 hours. Set `ttl_days` (up to 14) to keep a cluster longer, which
+  tags everything it creates with `cloud-nuke-after`. The expiry is fixed when the cluster is first created, so later
+  applies don't push it out. See
+  https://github.com/cloudnativelabs/kube-router-infra/blob/main/docs/reaper.md#extending-a-cluster
+* Instance types and EBS volumes are limited by the sandbox's cost controls. The defaults here fit within them.
+* If you used `terraform_aws` before it kept its state in S3, `terraform init` will offer to copy your local
+  `terraform.tfstate` into the bucket. Say no if that state belongs to a different AWS account, and either finish with
+  it first (`terraform destroy` before switching branches) or move it out of the way.
+
+Outside of the sandbox, point `-backend-config` at a bucket of your own instead.
 
 ## Setup the Kubernetes Cluster on the VMs / Instances
 
@@ -206,6 +238,9 @@ Once you are all done with your work on kube-router, you can tear down the VMs b
   Session Manager (fast, no bucket needed), `plugin` uses the `amazon.aws.aws_ssm` connection plugin
 * **ansible_ssm_bucket_name** - `kube-router-aws-ssm-ansible` - Default bucket name to use for discovering SSM
   information in Ansible (only used when `ansible_ssm_transport` is `plugin`)
+* **ttl_days** - NO_DEFAULT_SET - How many days, up to 14, the kube-router sandbox's reaper should leave this cluster
+  alone. Unset leaves it on the reaper's 48 hour default. See
+  [Using the kube-router AWS Sandbox](#using-the-kube-router-aws-sandbox)
 
 ### Ansible Variables
 
