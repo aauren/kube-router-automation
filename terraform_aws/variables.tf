@@ -121,3 +121,14 @@ variable "ansible_ssm_transport" {
     error_message = "ansible_ssm_transport must be either \"ssh\" or \"plugin\"."
   }
 }
+
+# Only matters in the kube-router sandbox, where anything older than 48 hours gets deleted unless it's tagged otherwise
+variable "ttl_days" {
+  type    = number
+  default = null
+
+  validation {
+    condition     = var.ttl_days == null || (var.ttl_days >= 1 && var.ttl_days <= 14)
+    error_message = "ttl_days must be between 1 and 14, since the sandbox reaper clamps anything longer to 14 days."
+  }
+}
