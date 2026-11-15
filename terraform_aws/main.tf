@@ -1,5 +1,22 @@
 provider "aws" {
   region = var.region
+
+  default_tags {
+    tags = local.expiry_tags
+  }
+}
+
+# Recorded once when the cluster is created, so that later applies don't keep pushing the expiry further out
+resource "time_static" "created" {
+  count = var.ttl_days == null ? 0 : 1
+}
+
+locals {
+  # cloud-nuke-after keeps the sandbox reaper away from everything this creates until then, see
+  # https://github.com/cloudnativelabs/kube-router-infra/blob/main/docs/reaper.md#extending-a-cluster
+  expiry_tags = var.ttl_days == null ? {} : {
+    "cloud-nuke-after" = timeadd(time_static.created[0].rfc3339, "${var.ttl_days * 24}h")
+  }
 }
 provider "local" {}
 

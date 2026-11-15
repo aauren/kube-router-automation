@@ -1,0 +1,6 @@
+# The kube-router sandbox's Terraform state bucket. The key is different for every cluster, so it's passed separately,
+# see README.md.
+bucket       = "kube-router-terraform-state-097089670124"
+region       = "us-east-2"
+encrypt      = true
+use_lockfile = true
